@@ -24,3 +24,21 @@ where depart_date_time > CURDATE();
 select 
 
 #   b. see status based on airline name, flight num, arrival/depart date
+
+# 2. Register system for customers + airline staff
+
+# 3. Login for customers + staff
+
+
+#Customer requirements
+# 1. View flights (future + specify date range, destination, and/or depart airport)
+# 2. Search for flights (depart airport, arrival port)
+# 3. Purchase tickets (choose flight and purchase; build with flight search together)
+# 4. Cancel trip (more than 24 hrs from depart, ticket free to other customers)
+# 5. rate + comment on flights (previous they took)
+# 6. Track spending (total spent in past year and bar graph/table of monthly spending for past 6 months. Can specify date range)
+# 7. Logout
+
+#Airline requirements
+# 1. 
+
