@@ -9,13 +9,13 @@ app = Flask(__name__)
 conn = pymysql.connect(host='localhost',
                        user='root',
                        password='',
-                       db='blog',
+                       db='ticketSys',
                        charset='utf8mb4',
                        cursorclass=pymysql.cursors.DictCursor)
 
 #Define a route to hello function
 @app.route('/')
-def hello():
+def start():
 	return render_template('index.html')
 
 #Define route for login

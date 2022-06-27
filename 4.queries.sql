@@ -21,7 +21,9 @@ where depart_date_time > CURDATE();
 
 # 1. View Public Info
 #   a. search future flight based on depart airport, arrival airport, and departure date (+ return for round trip)
-select 
+select *
+from future_flight
+where depart_airport = 
 
 #   b. see status based on airline name, flight num, arrival/depart date
 
