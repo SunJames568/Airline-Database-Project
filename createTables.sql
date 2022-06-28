@@ -111,3 +111,17 @@ email_address varchar(50),
 primary key(username,email_address),
 foreign key(username) references airline_staff(username) on delete cascade
 );
+
+create role staff
+grant staff to airline_staff;
+grant select, update, insert on flight to staff;
+grant select on rates to staff
+grant insert on airplane to staff;
+grant insert on airport to staff;
+
+create role custom
+grant custom to customer;
+grant select on flight to custom;
+grant update on tickets to custom;
+grant insert on rates to custom;
+grant insert on rates to custom;
