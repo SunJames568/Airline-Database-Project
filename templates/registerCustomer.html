@@ -1,0 +1,22 @@
+<html>
+<head>
+</head>
+<h1>Customer Register</h1>
+<form action="/customerregisterAuth" method="POST">
+	<p><label for="email">Email(s) </label><input type="text" name = "email" placeholder="john@yahoo.com, dan@gmail.com" required/></p>
+	<p><label for="name">Name <input type="text" name = "name" placeholder="name" required/></p>
+	<p><label for="password">Password <input type="password" name = "password" placeholder="password" required/></p>
+	<p><label for="building_number">Building Number <input type="text" name = "building_number" placeholder="building_number" required/></p>
+	<p><label for="street">Street <input type="text" name = "street" placeholder="street" required/></p>
+	<p><label for="city">City <input type="text" name = "city" placeholder="city" required/></p>
+	<p><label for="state">State <input type="text" name = "state" placeholder="state" required/></p>
+	<p><label for="phone_number">Phone Number(s) <input type="tel" name = "phone_number" placeholder="123-456-7890, 123-456-7891" required/></p>
+	<p><label for="passport_expiration">Passport Expiration <input type="date" name = "passport_expiration" placeholder="passport_expiration" required/></p>
+	<p><label for="passport_country">Passport Country <input type="text" name = "passport_country" placeholder="passport_country" required/></p>
+	<input type="submit" value = Register />
+	{% if error %}
+		<p class="error"><strong>Error:</strong> {{error}}</p>
+	{% endif %}
+</form>
+<a href="/">Go back</a>
+</html>
