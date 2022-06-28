@@ -1,0 +1,48 @@
+<html>
+<head>
+</head>
+<body>
+<form action="/post" method="POST">
+	<h1>Welcome {{name}}</h1>
+	<input type="text" name = "blog" placeholder="post" required/> </br>
+	<input type="submit" value = Post />
+</form>
+
+<h3> Upcoming Flights: </h3>
+
+<style type="text/css">
+	table, th, td{
+		border: 1px solid black;
+	}
+</style>
+
+<table>
+	<th>flight_num</th>
+	<th>airline_name</th>
+	<th>plane_ID</th>
+	<th>depart_date_time</th>
+	<th>depart_airport</th>
+	<th>arrival_date_time</th>
+	<th>arrival_airport</th>
+	<th>delay_status</th>
+
+{% for line in posts %}
+	<tr>
+		<td>{{line['flight_num']}}</td>
+		<td>{{line['airline_name']}}</td>
+		<td>{{line['plane_ID']}}</td>
+		<td>{{line['depart_dts']}}</td>
+		<td>{{line['depart_port']}}</td>
+		<td>{{line['arrival_dts']}}</td>
+		<td>{{line['arrival_port']}}</td>
+		<td>{{line['status']}}</td>
+	</tr>
+{% endfor %}
+</table>
+
+<a href="/logout">Logout</a>
+
+</body>
+
+
+</html>

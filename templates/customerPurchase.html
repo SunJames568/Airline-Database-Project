@@ -1,0 +1,61 @@
+<div class="row">
+    <div class="col-75">
+      <div class="container">
+        <form action="/action_page.php">
+          <style type="text/css">
+            table, th, td{
+              border: 1px solid black;
+            }
+          </style>
+          
+          <h3>Purchasing tickets for:</h3>
+          <table>
+            <th>flight_num</th>
+            <th>airline_name</th>
+            <th>plane_ID</th>
+            <th>depart_date_time</th>
+            <th>depart_airport</th>
+            <th>arrival_date_time</th>
+            <th>arrival_airport</th>
+            <th>delay_status</th>
+          
+          {% for line in posts %}
+            <tr>
+              <td>{{line['flight_num']}}</td>
+              <td>{{line['airline_name']}}</td>
+              <td>{{line['plane_ID']}}</td>
+              <td>{{line['depart_dts']}}</td>
+              <td>{{line['depart_port']}}</td>
+              <td>{{line['arrival_dts']}}</td>
+              <td>{{line['arrival_port']}}</td>
+              <td>{{line['status']}}</td>
+            </tr>
+          {% endfor %}
+          </table>
+          
+          <a href="/logout">Logout</a>
+          
+  
+          <div class="row">
+             
+            <div class="col-50">
+              <h3>Payment</h3>
+              </div>
+              <label for="cname">Name on Card</label>
+              <input type="text" id="cname" name="cardname" placeholder="John More Doe">
+              <label for="ccnum">Credit card number</label>
+              <input type="text" id="ccnum" name="cardnumber" placeholder="1111-2222-3333-4444">
+  
+              <div class="row">
+                <div class="col-50">
+                  <label for="expdate">Exp date</label>
+                  <input type="date" id="expdate" name="expdate" placeholder="2018">
+                </div>
+              </div>
+            </div>
+          </div>
+          <input type="submit" value="Continue to checkout" class="btn">
+        </form>
+      </div>
+    </div>
+  </div> 

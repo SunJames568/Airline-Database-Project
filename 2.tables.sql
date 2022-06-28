@@ -1,37 +1,37 @@
 create table customer
 (
 email varchar(30),
-name varchar(20) not null,
-password varchar(20) not null,
-building_number varchar(20),
-street varchar(20),
-city varchar(20),
-state varchar(20),
+name varchar(50) not null,
+password varchar(50) not null,
+building_number varchar(50),
+street varchar(50),
+city varchar(50),
+state varchar(50),
 phone_number varchar(12),
-passport_country varchar(20),
+passport_country varchar(50),
 passport_expiration date,
 birth_date date,
 primary key(email));
 
 create table airport
 (
-airport_name varchar(20),
-city varchar(20),
-country varchar(20),
+airport_name varchar(50),
+city varchar(50),
+country varchar(50),
 type varchar(5),
 primary key(airport_name));
 
 create table airline
 (
-airline_name varchar(20),
+airline_name varchar(50),
 primary key(airline_name));
 
 create table airplane
 (
 airline_id int,
-airline_name varchar(20),
+airline_name varchar(50),
 seating_capacity int,
-maufacturing_company varchar(20),
+maufacturing_company varchar(50),
 age int,
 primary key(airline_id,airline_name),
 foreign key(airline_name) references airline(airline_name) on delete set null
@@ -42,12 +42,12 @@ create table flight
 flight_num int,
 depart_date_time timestamp,
 airline_id int,
-airline_name varchar(20),
-depart_airport varchar(20),
-arrival_airport varchar(20),
+airline_name varchar(50),
+depart_airport varchar(50),
+arrival_airport varchar(50),
 arrival_date_time timestamp,
 base_price float(6),
-delay_status varchar(20),
+delay_status varchar(50),
 
 primary key(flight_num, depart_date_time) on delete set null,
 foreign key(airline_id, airline_name) references airplane(airline_id, airline_name) on delete set null,
@@ -57,14 +57,14 @@ foreign key(arrival_airport) references airport(airport_name) on delete set null
 
 create table tickets
 (
-ticket_id varchar(20),
+ticket_id varchar(50),
 email varchar(30),
 flight_num int,
 depart_date_time timestamp,
 sold_price float(6),
-card_type varchar(20),
+card_type varchar(50),
 card_number numeric(16, 0),
-card_name varchar(20),
+card_name varchar(50),
 expire_date date,
 purchase_date_time timestamp,
 primary key(ticket_id),
@@ -86,11 +86,11 @@ foreign key(flight_num, depart_date_time) references flight(flight_num, depart_d
 
 create table airline_staff
 (
-username varchar(20),
-airline_name varchar(20),
+username varchar(50),
+airline_name varchar(50),
 password varchar(500),
-first_name varchar(20),
-last_name varchar(20),
+first_name varchar(50),
+last_name varchar(50),
 birth_date date,
 primary key(username),
 foreign key(airline_name) references airline(airline_name) on delete set null
@@ -98,7 +98,7 @@ foreign key(airline_name) references airline(airline_name) on delete set null
 
 create table staff_phone
 (
-username varchar(20),
+username varchar(50),
 phone_number varchar(13),
 primary key(username,phone_number),
 foreign key(username) references airline_staff(username) on delete cascade
@@ -106,8 +106,8 @@ foreign key(username) references airline_staff(username) on delete cascade
 
 create table staff_emails
 (
-username varchar(20),
-email_address varchar(20),
+username varchar(50),
+email_address varchar(50),
 primary key(username,email_address),
 foreign key(username) references airline_staff(username) on delete cascade
 );

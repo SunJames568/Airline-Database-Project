@@ -1,0 +1,53 @@
+<body>
+    <h3>Search by Airport:</h3>
+    <div>
+        <form action="" method="POST">
+            <label for="name"> Departure Airport*: </label> <input type="text" name="depAirport" placeholder="JFK" required/>
+            <br/>
+            <label for="name"> Arrival Airport*: </label> <input type="text" name="arrAirport" placeholder="PBI" required/>
+            <br/>
+            <label for="name"> Departure Date*: </label> <input type="date" name="depDate" required/>
+            <br/>
+            <label for="name"> Return Date: (Round Trips)</label> <input type="date" name="retDate"/>
+            <br/>
+            <input type="submit" name="searchAirport" value="Search">
+        </form>
+    </div>
+
+    <h3> Search by City: </h3>
+    <div>
+        <form action="" method="POST">
+            <label for="name"> Departure City*: </label>
+            <input type="text" name="depCity" placeholder="Queens" required/>
+            <br/>
+            <label for="name"> Arrival City*: </label>
+            <input type="text" name="arrCity" placeholder="Palm Beach" required/>
+            <br/>
+            <label for="name"> Departure Date*: </label>
+            <input type="date" name="depDate" required/>
+            <br/>
+            <label for="name"> Return Date: (Round Trips)</label>
+            <input type="date" name="retDate"/>
+            <br/>
+            <input type="submit" name="searchCity" value="Search">
+        </form>
+    </div>
+    <h3>Search for Flight Status:</h3>
+    <div>
+        <form action="" method="POST">
+            <label for="name"> Airline Name*: </label>
+            <input type="text" name="airlineName" placeholder="United" required/>
+            <br/>
+            <label for="name"> Flight Number*: </label>
+            <input type="text" name="flightNumber" placeholder="123456789" required/>
+            <br/>
+            <label for="name"> Departure Date*:</label>
+            <input type="date" name="retDate"/>
+            <br/>
+            <label for="name"> Arrival Date*: </label>
+            <input type="date" name="depDate" required/>
+            <br/>
+            <input type="submit" name="searchStatus" value="Search">
+        </form>
+    </div>
+</body>
