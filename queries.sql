@@ -96,8 +96,8 @@ update tickets
 # 4. Cancel trip (more than 24 hrs from depart, ticket free to other customers)
 update tickets
     set email, sold_price, card_type, card_number, card_name, expire_date, purchase_date_time = null
-    where ticket_ID = @t_id and depart_date_time;
-    ;
+    where ticket_ID = @t_id and (TIMESTAMPDIFF(HOUR, NOW(), depart_date_time) > 24);
+    
 # 5. rate + comment on flights (previous they took)
 insert into rates values(@email, @f_num, @depart_d_t, @rating_lvl, @comment);
 # 6. Track spending (total spent in past year and bar graph/table of monthly spending for past 6 months. Can specify date range)
