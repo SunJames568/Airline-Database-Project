@@ -18,7 +18,7 @@ create table airport
 airport_name varchar(50),
 city varchar(50),
 country varchar(50),
-type varchar(5),
+type varchar(50),
 primary key(airport_name));
 
 create table airline
