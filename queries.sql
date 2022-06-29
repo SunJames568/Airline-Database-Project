@@ -86,7 +86,9 @@ where depart_airport = @arrival_port
 with overFilled(value) as (
     select count(flight_num)/seating_capacity
     from tickets
-    where flight_num = f_num and depart_date_time = depart_d_t and exists(email)
+    where flight_num = f_num 
+        and depart_date_time = depart_d_t 
+        and exists(email);
 )
 update tickets
     set sold_price = case 
@@ -96,25 +98,30 @@ update tickets
 # 4. Cancel trip (more than 24 hrs from depart, ticket free to other customers)
 update tickets
     set email, sold_price, card_type, card_number, card_name, expire_date, purchase_date_time = null
-    where ticket_ID = @t_id and (TIMESTAMPDIFF(HOUR, NOW(), depart_date_time) > 24);
-    
+    where ticket_ID = @t_id 
+        and (TIMESTAMPDIFF(HOUR, NOW(), depart_date_time) > 24);
+
 # 5. rate + comment on flights (previous they took)
 insert into rates values(@email, @f_num, @depart_d_t, @rating_lvl, @comment);
 # 6. Track spending (total spent in past year and bar graph/table of monthly spending for past 6 months. Can specify date range)
-
     # total spent Past year (default view)
 select sum(sold_price)
 from tickets
-where email = c_email and CONVERT(depart_date_time, date) between DATE_ADD(CURDATE(), INTERVAL -1 YEAR) and CURDATE();
+where email = c_email 
+    and CONVERT(depart_date_time, date) between DATE_ADD(CURDATE(), INTERVAL -1 YEAR) and CURDATE();
     # total spent (specify)
 select sum(sold_price)
 from tickets
-where email = c_email and CONVERT(depart_date_time, date) between @date1 and @date2;
+where email = c_email 
+    and CONVERT(depart_date_time, date) between @date1 and @date2;
 
     # Monthly spending Past 6 months (default view)
 select sum(sold_price)
 from tickets
-where email = @c_email and CONVERT(depart_date_time, date) between DATE_SUB(DATE_ADD(CURDATE(), INTERVAL -6 MONTH), INTERVAL DAYOFMONTH(DATE_ADD(CURDATE(), INTERVAL -6 MONTH))-1) and CURDATE();
+where email = @c_email 
+    and CONVERT(depart_date_time, date) between (DATE_SUB(DATE_ADD(CURDATE(), INTERVAL -6 MONTH), INTERVAL DAYOFMONTH(DATE_ADD(CURDATE(), INTERVAL -6 MONTH))-1)) and CURDATE()
+group by date_format(date_column, '%M');
+
 # 7. Logout
 
 /*Airline requirements
@@ -126,7 +133,8 @@ all the customers of a particular flight.
 #default view
 select *
 from future_flight
-where airline_name = @line_name and depart_date_time between CURDATE() and DATE_ADD(CURDATE(), INTERVAL 30 DAY); 
+where airline_name = @line_name 
+    and depart_date_time between CURDATE() and DATE_ADD(CURDATE(), INTERVAL 30 DAY); 
 
 #filter flights by airport
 select *
