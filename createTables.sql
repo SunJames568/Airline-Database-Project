@@ -8,7 +8,7 @@ street varchar(50),
 city varchar(50),
 state varchar(50),
 phone_number varchar(12),
-passport_country varchar(50)
+passport_country varchar(50),
 passport_expiration date,
 birth_date date,
 primary key(email));
