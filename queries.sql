@@ -13,7 +13,7 @@ select *
 from airplane
 where airline_name = "Jet Blue";
 
-# Generic view for future flights
+# view for future flights
 create view future_flight as
 select *
 from flight
@@ -21,17 +21,36 @@ where depart_date_time > CURDATE();
 
 # 1. View Public Info
 #   a. search future flight based on depart airport, arrival airport, and departure date (+ return for round trip)
+
+#   by airport
 select *
 from future_flight
-where depart_airport = @depart_port and arrival_airport = @arrival_port and CONVERT(depart_date_time, date) = @depart_d_t;
-
-# For return flights
+where depart_airport = @depart_port 
+    and arrival_airport = @arrival_port 
+    and CONVERT(depart_date_time, date) = @depart_d_t;
+#        (For return flights)
 select *
 from future_flight
 where depart_airport = @arrival_port 
     and arrival_airport = @depart_port 
     and (CONVERT(depart_date_time, date) = @return_d_t or @return_d_t is NULL);
 
+#   by city
+select *
+from future_flight, airport as d, airport as a
+where depart_airport = d.airport_name
+    and d.city = @depart_city
+    and arrival_airport = a.airport_name
+    and a.city = @arrival_city
+    and CONVERT(depart_date_time, date) = @depart_d_t;
+#       return flights
+select *
+from future_flight, airport as d, airport as a
+where depart_airport = d.airport_name
+    and d.city = @arrival_city
+    and arrival_airport = a.airport_name
+    and a.city = @depart_city
+    and (CONVERT(depart_date_time, date) = @return_d_t or @return_d_t is NULL);
 #   b. see status based on airline name, flight num, arrival/depart date
 select status
 from future_flight
@@ -41,7 +60,7 @@ where airline_name = @line_name
     and arrival_date_time = @arrival_d_t;
 
 # 2. Register system for customers + airline staff
-insert into customer values(@email, @name, @password, @b_num, @street, @city, @state, @phone, @pass_exp, @pass_country, @birth_d);
+insert into customer values(@email, @name, @password, @b_num, @street, @city, @state, @phone, @pass_country, @pass_exp, @birth_d);
 # 3. Login for customers + staff
 
 
@@ -49,7 +68,7 @@ insert into customer values(@email, @name, @password, @b_num, @street, @city, @s
 # 1. View flights (future + specify date range, destination, and/or depart airport)
 select flight_num, depart_date_time, airplane_ID, airline_name, depart_airport, arrival_airport, arrival_date_time, base_price, delay_status,
 from tickets natural join future_flight
-where email = @email
+where email = @email;
 
 # 2. Search for flights (depart airport, arrival port)
 select *
