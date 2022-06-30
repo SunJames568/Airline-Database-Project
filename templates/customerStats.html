@@ -1,0 +1,31 @@
+<html>
+<head>
+</head>
+<body>
+
+<h1>Total Spending {{username}}</h1>
+
+<style type="text/css">
+	table, th, td{
+		border: 1px solid black;
+	}
+</style>
+
+<table>
+	<th>Month</th>
+	<th>Spending</th>
+
+{% for line in posts %}
+	<tr>
+		<td>{{line['month']}}</td>
+		<td>{{line['spending']}}</td>
+	</tr>
+{% endfor %}
+</table>
+
+<a href="/logout">Logout</a>
+
+</body>
+
+
+</html>

@@ -120,7 +120,14 @@ select sum(sold_price)
 from tickets
 where email = @c_email 
     and CONVERT(depart_date_time, date) between (DATE_SUB(DATE_ADD(CURDATE(), INTERVAL -6 MONTH), INTERVAL DAYOFMONTH(DATE_ADD(CURDATE(), INTERVAL -6 MONTH))-1)) and CURDATE()
-group by date_format(date_column, '%M');
+group by date_format(depart_date_time, '%M');
+
+    # Monthly spending specified
+select sum(sold_price)
+from tickets
+where email = @c_email 
+    and CONVERT(depart_date_time, date) between @date1 and @date2
+group by date_format(depart_date_time, '%M');
 
 # 7. Logout
 
