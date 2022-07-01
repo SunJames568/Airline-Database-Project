@@ -5,6 +5,10 @@
 {% if error %}
 <p class="error"><strong>Error:</strong> {{error}}</p>
 {% endif %}
+{% if regPass %}
+<p class="regPass"><strong>Registration Successful!</strong></p>
+{% endif %}
+
 <div class="login-block">
     <h3>Customer Login</h3>
     <form action="/loginCustomerAuth" method="post">

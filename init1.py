@@ -55,7 +55,7 @@ def loginAuthCustomer():
 		#creates a session for the the user
 		#session is a built in
 		session['username'] = username
-		return redirect(url_for('staffHome'))
+		return redirect(url_for('customerHome'))
 	else:
 		#returns an error message to the html page
 		error = 'Invalid login or email'
@@ -123,7 +123,7 @@ def registerAuthCustomer():
 		cursor.execute(ins, (email, name, password, building_number, street, city, state, phone_number, passport_expiration, passport_country, birth_date))
 		conn.commit()
 		cursor.close()
-		return render_template('login.html')
+		return render_template('login.html', regPass = True)
 
 @app.route('/registerStaffAuth', methods=['GET', 'POST'])
 def registerAuthStaff():
@@ -156,32 +156,30 @@ def registerAuthStaff():
 	else:
 		ins = 'insert into airline_staff values(%s, %s, %s, %s, %s, %s);'
 		p_ins = 'insert into staff_phone values(%s, %s)'
-		e_ins = 'insert into staff_emails values(%s, %s)'
+		e_ins = 'insert into staff_email values(%s, %s)'
 
 		cursor.execute(ins, (username, airline_name, password, first_name, last_name, birth_date))
 		for num in p_list:
-			print(num, type(num))
-			print("\n", type(cursor))
 			cursor.execute(p_ins, (username, num.strip()))
 		for email in e_list:
 			cursor.execute(e_ins, (username, email.strip()))
 
 		conn.commit() 
 		cursor.close()
-		return render_template('login.html')
+		return render_template('login.html', regPass = True)
 
 @app.route('/customerHome')
 def customerHome():
     
-    username = session['username']
+    email = session['email']
     cursor = conn.cursor();
-    query = 'SELECT ts, blog_post FROM blog WHERE username = %s ORDER BY ts DESC'
-    cursor.execute(query, (username))
+    query = 'SELECT flight_num, airline_name, airplane_ID, depart_date_time, depart_airport, arrival_date_time, arrival_airport, delay_status FROM tickets natural join future_flight WHERE email = %s'
+    cursor.execute(query, (email))
     data1 = cursor.fetchall() 
     for each in data1:
         print(each['blog_post'])
     cursor.close()
-    return render_template('home.html', username=username, posts=data1)
+    return render_template('home.html', email=email, posts=data1)
 
 
 @app.route('/staffHome')
@@ -189,7 +187,7 @@ def staffHome():
     
     username = session['username']
     cursor = conn.cursor();
-    query = 'SELECT ts, blog_post FROM blog WHERE username = %s ORDER BY ts DESC'
+    query = 'SELECT flight_num, depart_date_time, airplane_ID, airline_name, depart_airport, arrival_airport, arrival_date_time, delay_status FROM tickets natural join future_flight WHERE email = @email;'
     cursor.execute(query, (username))
     data1 = cursor.fetchall() 
     for each in data1:

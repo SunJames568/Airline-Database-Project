@@ -55,7 +55,7 @@ foreign key(depart_airport) references airport(airport_name) on delete set null,
 foreign key(arrival_airport) references airport(airport_name) on delete set null
 );
 
-create table tickets
+create table ticket
 (
 ticket_id varchar(50),
 email varchar(30),
@@ -72,7 +72,7 @@ foreign key(email) references customer(email) on delete set null,
 foreign key(flight_num, depart_date_time) references flight(flight_num, depart_date_time) on delete cascade
 );
 
-create table rates
+create table rate
 (
 email varchar(30),
 flight_num int,
@@ -104,13 +104,20 @@ primary key(username,phone_number),
 foreign key(username) references airline_staff(username) on delete cascade
 );
 
-create table staff_emails
+create table staff_email
 (
 username varchar(50),
 email_address varchar(50),
 primary key(username,email_address),
 foreign key(username) references airline_staff(username) on delete cascade
 );
+
+# view for future flights
+create view future_flight as
+SELECT *
+FROM flight
+WHERE depart_date_time > CURDATE();
+
 /*
 create role staff;
 grant staff to airline_staff;
