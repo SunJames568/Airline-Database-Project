@@ -28,12 +28,12 @@ primary key(airline_name));
 
 create table airplane
 (
-airline_id int,
+airplane_id int,
 airline_name varchar(50),
 seating_capacity int,
 maufacturing_company varchar(50),
 age int,
-primary key(airline_id, airline_name),
+primary key(airplane_id, airline_name),
 foreign key(airline_name) references airline(airline_name) on delete cascade
 );
 
@@ -41,7 +41,7 @@ create table flight
 (
 flight_num int,
 depart_date_time timestamp,
-airline_id int,
+airplane_id int,
 airline_name varchar(50),
 depart_airport varchar(50),
 arrival_airport varchar(50),
@@ -50,7 +50,7 @@ base_price float(6),
 delay_status varchar(50),
 
 primary key(flight_num, depart_date_time),
-foreign key(airline_id, airline_name) references airplane(airline_id, airline_name) on delete set null,
+foreign key(airplane_id, airline_name) references airplane(airplane_id, airline_name) on delete set null,
 foreign key(depart_airport) references airport(airport_name) on delete set null,
 foreign key(arrival_airport) references airport(airport_name) on delete set null
 );

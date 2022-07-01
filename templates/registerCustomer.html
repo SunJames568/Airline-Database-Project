@@ -13,11 +13,14 @@
 	<p><label for="phone_number">Phone Number <input type="tel" name = "phone_number" placeholder="123-456-7890" required/></p>
 	<p><label for="passport_expiration">Passport Expiration <input type="date" name = "passport_expiration" placeholder="passport_expiration" required/></p>
 	<p><label for="passport_country">Passport Country <input type="text" name = "passport_country" placeholder="passport_country" required/></p>
-	<p><label for="birth_date">Passport Country <input type="date" name = "birth_date" placeholder="birth_date" required/></p>
+	<p><label for="birth_date">Birth Date <input type="date" name = "birth_date" placeholder="birth_date" required/></p>
 		<input type="submit" value = Register />
 	{% if error %}
 		<p class="error"><strong>Error:</strong> {{error}}</p>
 	{% endif %}
 </form>
+{% if regPass %}
+<p class="regPass"><strong>Registration Successful!</strong></p>
+{% endif %}
 <a href="/login">Go back</a>
 </html>

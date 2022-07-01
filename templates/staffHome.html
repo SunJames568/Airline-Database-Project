@@ -2,41 +2,69 @@
 <head>
 </head>
 <body>
-<form action="/post" method="POST">
-	<h1>Welcome {{username}}</h1>
+<h1>Welcome {{username}}!</h1>
+
+<form action="/staffHome/filter" method="POST">
 	<h3> Filter Flights: </h3>
-	<input type="text" name = "blog" placeholder="post" required/> </br>
-	<input type="submit" value = Filter />
+	<label for="depAirport"> Departure Airport: </label> <input type="text" name="depAirport" placeholder="JFK"/>
+	<br/>
+	<label for="arrAirport"> Arrival Airport: </label> <input type="text" name="arrAirport" placeholder="PBI"/>
+	<br/>
+	<label for="date1"> Date Start*: </label> <input type="date" name="date1" required/>
+	<br/>
+	<label for="date2"> Date End*: </label> <input type="date" name="date2" required/>
+	<br/>
+	<input type="submit" value="Filter">
 </form>
 
-<h3> Upcoming Flights: </h3>
+<h3> Flights: </h3>
 
 <style type="text/css">
 	table, th, td{
 		border: 1px solid black;
 	}
 </style>
-
 <table>
-	<th>flight_num</th>
-	<th>airline_name</th>
-	<th>depart_date_time</th>
-	<th>depart_airport</th>
-	<th>arrival_date_time</th>
-	<th>arrival_airport</th>
-	<th>delay_status</th>
+	<th>Flight Num</th>
+	<th>Airline Name</th>
+	<th>Plane ID</th>
+	<th>Depart Date-Time</th>
+	<th>Depart Airport</th>
+	<th>Arrival Date-Time</th>
+	<th>Arrival Airport</th>
+	<th>Base Price</th>
+	<th>Delay Status</th>
+	<th>View Customers</th>
+	<th>View Ratings</th>
 
 {% for line in posts %}
 	<tr>
-		<td>{{line['ts']}}</td>
-		<td>{{line['blog_post']}}</td>
+		<td>{{line['flight_num']}}</td>
+		<td>{{line['airline_name']}}</td>
+		<td>{{line['airplane_id']}}</td>
+		<td>{{line['depart_date_time']}}</td>
+		<td>{{line['depart_airport']}}</td>
+		<td>{{line['arrival_date_time']}}</td>
+		<td>{{line['arrival_airport']}}</td>
+		<td>{{line['base_price']}}</td>
+		<td>{{line['delay_status']}}</td>
+		<td>
+			<form action="/staffSeating" method="post"></form>
+				<input type="submit" name="{{line['flight_num']}}|{line['depart_date_time']}" value="View Customers">
+			</form>
+		</td>
+		<td>
+			<form action="/staffRating" method="post"></form>
+				<input type="submit" name="{{line['flight_num']}}|{line['depart_date_time']}" value="Ratings">
+			</form>
+		</td>
 	</tr>
 {% endfor %}
 </table>
-
+{% if filtered %}
+<a href="/staffHome">Go back</a>
+{% endif %}
 <a href="/logout">Logout</a>
 
 </body>
-
-
 </html>

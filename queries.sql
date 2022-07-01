@@ -116,14 +116,14 @@ WHERE email = c_email
     and CONVERT(depart_date_time, date) between @date1 and @date2;
 
     # Monthly spending Past 6 months (default view)
-SELECT sum(sold_price)
+SELECT date_format(depart_date_time, '%M'), sum(sold_price)
 FROM tickets
 WHERE email = @c_email 
     and CONVERT(depart_date_time, date) between (DATE_SUB(DATE_ADD(CURDATE(), INTERVAL -6 MONTH), INTERVAL DAYOFMONTH(DATE_ADD(CURDATE(), INTERVAL -6 MONTH))-1)) and CURDATE()
-group by date_format(depart_date_time, '%M');
+GROUP BY date_format(depart_date_time, '%M');
 
     # Monthly spending specified
-SELECT sum(sold_price)
+SELECT date_format(depart_date_time, '%M'), sum(sold_price)
 FROM tickets
 WHERE email = @c_email 
     and CONVERT(depart_date_time, date) between @date1 and @date2
@@ -160,7 +160,7 @@ WHERE flight_num = @f_num and depart_date_time = @depart_d_t;
 #2. Create new flights: He or she creates a new flight, providing all the needed data, via forms. The 
 # application should prevent unauthorized users FROM doing this action. Defaults will be showing all the 
 # future flights operated by the airline he/she works for the next 30 days.
-INSERT into flight values(@flight_num, @depart_date_time, @airline_id, @airline_name, @depart_airport, @arrival_airport, @arrival_date_time, @base_price, @delay_status);
+INSERT into flight values(@flight_num, @depart_date_time, @airplane_id, @airline_name, @depart_airport, @arrival_airport, @arrival_date_time, @base_price, @delay_status);
 
 #3. Change Status of flights: He or she changes a flight status (FROM on-time to delayed or vice versa) via forms. 
 UPDATE flight
@@ -170,7 +170,7 @@ UPDATE flight
 #4. Add airplane in the system: He or she adds a new airplane, providing all the needed data, via forms. 
 #The application should prevent unauthorized users FROM doing this action. In the confirmation page, 
 #she/he will be able to see all the airplanes owned by the airline he/she works for.
-INSERT into airplane values(@airline_id, @airline_name, @seating_capacity, @maufacturing_company, @age);
+INSERT into airplane values(@airplane_id, @airline_name, @seating_capacity, @maufacturing_company, @age);
 #Confirmation view
 select *
 from airplane
@@ -195,8 +195,10 @@ the last year. In addition, Airline Staff will be able to see a list of all flig
 taken only on that particular airline.*/
 WITH flightCount(email, amount) as (
     SELECT email, count(ticket_ID)
-    FROM ticket
-    WHERE email = @email and CONVERT(depart_date_time, date) between DATE_ADD(CURDATE(), INTERVAL -1 YEAR) and CURDATE()
+    FROM ticket natural join flight
+    WHERE email = @email 
+        and airline_name = @airline_name 
+        and CONVERT(depart_date_time, date) between DATE_ADD(CURDATE(), INTERVAL -1 YEAR) and CURDATE()
 ),
     mostFlights(amount) as (
     SELECT max(amount)
@@ -208,8 +210,55 @@ WHERE flightCount.amount = mostFlights.amount
 
 /*8. View reports: Total amounts of ticket sold based on range of dates/last year/last month etc. Month 
 wise tickets sold in a bar chart/table.*/
+#Custom
+SELECT count(ticket_ID)
+FROM ticket natural join flight
+WHERE airline_name = @airline_name
+    and CONVERT(depart_date_time, date) between @date1 and @date2;
+#Last Year
+SELECT count(ticket_ID)
+FROM ticket natural join flight
+WHERE airline_name = @airline_name
+    and CONVERT(depart_date_time, date) between DATE_ADD(CURDATE(), INTERVAL -1 YEAR) and CURDATE();
+#Last Month
+SELECT count(ticket_ID)
+FROM ticket natural join flight
+WHERE airline_name = @airline_name
+    and CONVERT(depart_date_time, date) between DATE_ADD(CURDATE(), INTERVAL -1 MONTH) and CURDATE();
+
+# Bar Charts
+    #Custom
+SELECT date_format(depart_date_time, '%M'), count(ticket_ID)
+FROM ticket natural join flight
+WHERE airline_name = @airline_name
+    and CONVERT(depart_date_time, date) between @date1 and @date2;
+GROUP BY date_format(depart_date_time, '%M');
+    # Last Year
+SELECT date_format(depart_date_time, '%M'), count(ticket_ID)
+FROM ticket natural join flight
+WHERE airline_name = @airline_name
+    and CONVERT(depart_date_time, date) between DATE_ADD(CURDATE(), INTERVAL -1 YEAR) and CURDATE();
+GROUP BY date_format(depart_date_time, '%M');
+    #Last Month
+    SELECT date_format(depart_date_time, '%M'), count(ticket_ID)
+FROM ticket natural join flight
+WHERE airline_name = @airline_name
+    and CONVERT(depart_date_time, date) between DATE_ADD(CURDATE(), INTERVAL -1 MONTH) and CURDATE();
+GROUP BY date_format(depart_date_time, '%M');
 
 /*9. View Earned Revenue: Show total amount of revenue earned FROM ticket sales in the last month and 
 last year*/
+# last month
+SELECT sum(sold_price)
+FROM ticket natural join flight
+WHERE airline_name = @airline_name
+    and CONVERT(depart_date_time, date) between DATE_ADD(CURDATE(), INTERVAL -1 MONTH) and CURDATE();
+# last year
+SELECT sum(sold_price)
+FROM ticket natural join flight
+WHERE airline_name = @airline_name
+    and CONVERT(depart_date_time, date) between DATE_ADD(CURDATE(), INTERVAL -1 YEAR) and CURDATE();
+
+
 
 

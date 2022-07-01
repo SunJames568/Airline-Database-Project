@@ -3,7 +3,7 @@
 </head>
 <body>
 <form action="/post" method="POST">
-	<h1>Welcome {{name}}</h1>
+	<h1>Welcome {{email}}</h1>
 	<input type="text" name = "blog" placeholder="post" required/> </br>
 	<input type="submit" value = Post />
 </form>
@@ -17,14 +17,14 @@
 </style>
 
 <table>
-	<th>flight_num</th>
-	<th>airline_name</th>
-	<th>plane_ID</th>
-	<th>depart_date_time</th>
-	<th>depart_airport</th>
-	<th>arrival_date_time</th>
-	<th>arrival_airport</th>
-	<th>delay_status</th>
+	<th>Flight Num</th>
+	<th>Airline Name</th>
+	<th>Plane ID</th>
+	<th>Depart Date-Time</th>
+	<th>Depart Airport</th>
+	<th>Arrival Date-Time</th>
+	<th>Arrival Airport</th>
+	<th>Delay Status</th>
 
 {% for line in posts %}
 	<tr>
@@ -34,7 +34,7 @@
 		<td>{{line['depart_date_time']}}</td>
 		<td>{{line['depart_airport']}}</td>
 		<td>{{line['arrival_date_time']}}</td>
-		<td>{{line['arrival_port']}}</td>
+		<td>{{line['arrival_airport']}}</td>
 		<td>{{line['delay_status']}}</td>
 	</tr>
 {% endfor %}
