@@ -4,22 +4,23 @@
 
 <div class="login-block">
     <h3>Customer Login</h3>
-    <form action="#" method="post">
-        <p><label for="customer_name">Email </label><input type="text" name="customer_email" id="customer_email" /></p>
-        <p><label for="ftp-password">Password </label><input type="password" name="customer_pw" id="customer_pw" /></p>
-        <p class="submit-wrap"><input type="submit" id="ftp-submit" class="button" value="Login" /></p>
+    <form action="/loginCustomerAuth" method="post">
+        <p><label for="customer_email">Email </label><input type="text" name="customer_email" id="customer_email" /></p>
+        <p><label for="customer_pw">Password </label><input type="password" name="customer_pw" id="customer_pw" /></p>
+        <p class="submit-wrap"><input type="submit" id="submit_customer" class="button" value="Login" /></p>
     </form>
 </div>
 <a href="/customerRegister">Register as Customer</a>
 
-<div class="login-block last"> 
+<div class="loginStaffAuth"> 
     <h3>Airline Staff Login</h3>
     <form action="#" method="post">
-        <p><label for="secret-user-name">User Name </label><input type="text" name="staff_uname" id="staff_uname" /></p>
-        <p><label for="secret-password">Password </label><input type="password" name="staff_pw" id="staff_pw" /></p>
-        <p class="submit-wrap"><input type="submit" id="ftp-submit" class="button" value="Login" /></p>
+        <p><label for="staff_uname">User Name </label><input type="text" name="staff_uname" id="staff_uname" /></p>
+        <p><label for="staff_pw">Password </label><input type="password" name="staff_pw" id="staff_pw" /></p>
+        <p class="submit-wrap"><input type="submit" id="submit_staff" class="button" value="Login" /></p>
     </form>
 </div>
 <a href="/staffRegister">Register as Airline Staff</a>
+
 <a href="/">Go back</a>
 </html>
