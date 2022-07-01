@@ -25,18 +25,18 @@ def login():
 	return render_template('login.html')
 
 #Define route for customer register
-@app.route('/register')
-def register():
+@app.route('/registerCustomer')
+def registerCustomer():
 	return render_template('registerCustomer.html')
 
 #Define route for staff register
-@app.route('/register')
-def register():
+@app.route('/registerStaff')
+def registerStaff():
 	return render_template('registerStaff.html')
 
 #Authenticates the login
 @app.route('/loginCustomerAuth', methods=['GET', 'POST'])
-def loginAuth():
+def loginAuthCustomer():
 	#grabs information from the forms
 	username = request.form['customer_email']
 	password = hashlib.md5(request.form['customer_pw'].encode()).hexdigest()
@@ -62,15 +62,15 @@ def loginAuth():
 		return render_template('login.html', error=error)
 
 @app.route('/loginStaffAuth', methods=['GET', 'POST'])
-def loginAuth():
+def loginAuthStaff():
 	#grabs information from the forms
-	username = request.form['staff_uname']
-	password = hashlib.md5(request.form['staff_pw']).hexdigest()
+	username = request.form['username']
+	password = hashlib.md5(request.form['staff_pw'].encode()).hexdigest()
 
 	#cursor used to send queries
 	cursor = conn.cursor()
 	#executes query
-	query = 'SELECT * FROM airline_staff WHERE name = %s and password = %s'
+	query = 'SELECT * FROM airline_staff WHERE username = %s and password = %s'
 	cursor.execute(query, (username, password))
 	#stores the results in a variable
 	data = cursor.fetchone()
@@ -89,11 +89,11 @@ def loginAuth():
 
 #Authenticates the register
 @app.route('/registerCustomerAuth', methods=['GET', 'POST'])
-def registerAuth():
+def registerAuthCustomer():
 	#grabs information from the forms
 	email = request.form['email']
 	name = request.form['name']
-	password = hashlib.md5(request.form['password']).hexdigest()
+	password = hashlib.md5(request.form['password'].encode()).hexdigest()
 	building_number = request.form['building_number']
 	street = request.form['street']
 	city = request.form['city']
@@ -101,11 +101,14 @@ def registerAuth():
 	phone_number = request.form['phone_number']
 	passport_expiration = request.form['passport_expiration']
 	passport_country = request.form['passport_country']
+	birth_date = request.form['birth_date']
+
+	print(type(building_number))
 	
 	#cursor used to send queries
 	cursor = conn.cursor()
 	#executes query
-	query = 'SELECT * FROM user WHERE email = %s'
+	query = 'SELECT * FROM customer WHERE email = %s'
 	cursor.execute(query, (email))
 	#stores the results in a variable
 	data = cursor.fetchone()
@@ -114,24 +117,33 @@ def registerAuth():
 	if(data):
 		#If the previous query returns data, then user exists
 		error = "This customer already exists"
-		return render_template('register.html', error = error)
+		return render_template('registerCustomer.html', error = error)
 	else:
-		ins = 'INSERT INTO user VALUES(%s, %s)'
-		cursor.execute(ins, (username, password))
+		ins = 'insert into customer values(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);'
+		cursor.execute(ins, (email, name, password, building_number, street, city, state, phone_number, passport_expiration, passport_country, birth_date))
 		conn.commit()
 		cursor.close()
-		return render_template('index.html')
+		return render_template('login.html')
 
 @app.route('/registerStaffAuth', methods=['GET', 'POST'])
-def registerAuth():
+def registerAuthStaff():
 	#grabs information from the forms
 	username = request.form['username']
-	password = request.form['password']
+	airline_name = request.form['airline_name']
+	password = hashlib.md5(request.form['password'].encode()).hexdigest()
+	first_name = request.form['first_name']
+	last_name = request.form['last_name']
+	birth_date = request.form['birth_date']
+	phone_number = request.form['phone_number']
+	email_address = request.form['email_address']
 
+	p_list = phone_number.split(",")
+	e_list = email_address.split(",")
+	
 	#cursor used to send queries
 	cursor = conn.cursor()
 	#executes query
-	query = 'SELECT * FROM user WHERE username = %s'
+	query = 'SELECT * FROM airline_staff WHERE username = %s'
 	cursor.execute(query, (username))
 	#stores the results in a variable
 	data = cursor.fetchone()
@@ -139,17 +151,27 @@ def registerAuth():
 	error = None
 	if(data):
 		#If the previous query returns data, then user exists
-		error = "This user already exists"
-		return render_template('register.html', error = error)
+		error = "This username already exists"
+		return render_template('registerStaff.html', error = error)
 	else:
-		ins = 'INSERT INTO user VALUES(%s, %s)'
-		cursor.execute(ins, (username, password))
-		conn.commit()
-		cursor.close()
-		return render_template('index.html')
+		ins = 'insert into airline_staff values(%s, %s, %s, %s, %s, %s);'
+		p_ins = 'insert into staff_phone values(%s, %s)'
+		e_ins = 'insert into staff_emails values(%s, %s)'
 
-@app.route('/home')
-def home():
+		cursor.execute(ins, (username, airline_name, password, first_name, last_name, birth_date))
+		for num in p_list:
+			print(num, type(num))
+			print("\n", type(cursor))
+			cursor.execute(p_ins, (username, num.strip()))
+		for email in e_list:
+			cursor.execute(e_ins, (username, email.strip()))
+
+		conn.commit() 
+		cursor.close()
+		return render_template('login.html')
+
+@app.route('/customerHome')
+def customerHome():
     
     username = session['username']
     cursor = conn.cursor();
@@ -161,17 +183,19 @@ def home():
     cursor.close()
     return render_template('home.html', username=username, posts=data1)
 
-		
-@app.route('/post', methods=['GET', 'POST'])
-def post():
-	username = session['username']
-	cursor = conn.cursor();
-	blog = request.form['blog']
-	query = 'INSERT INTO blog (blog_post, username) VALUES(%s, %s)'
-	cursor.execute(query, (blog, username))
-	conn.commit()
-	cursor.close()
-	return redirect(url_for('home'))
+
+@app.route('/staffHome')
+def staffHome():
+    
+    username = session['username']
+    cursor = conn.cursor();
+    query = 'SELECT ts, blog_post FROM blog WHERE username = %s ORDER BY ts DESC'
+    cursor.execute(query, (username))
+    data1 = cursor.fetchall() 
+    for each in data1:
+        print(each['blog_post'])
+    cursor.close()
+    return render_template('home.html', username=username, posts=data1)
 
 @app.route('/logout')
 def logout():

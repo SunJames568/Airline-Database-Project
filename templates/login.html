@@ -2,6 +2,9 @@
 <head>
 </head>
 
+{% if error %}
+<p class="error"><strong>Error:</strong> {{error}}</p>
+{% endif %}
 <div class="login-block">
     <h3>Customer Login</h3>
     <form action="/loginCustomerAuth" method="post">
@@ -10,7 +13,7 @@
         <p class="submit-wrap"><input type="submit" id="submit_customer" class="button" value="Login" /></p>
     </form>
 </div>
-<a href="/customerRegister">Register as Customer</a>
+<a href="/registerCustomer">Register as Customer</a>
 
 <div class="loginStaffAuth"> 
     <h3>Airline Staff Login</h3>
@@ -20,7 +23,7 @@
         <p class="submit-wrap"><input type="submit" id="submit_staff" class="button" value="Login" /></p>
     </form>
 </div>
-<a href="/staffRegister">Register as Airline Staff</a>
-
+<a href="/registerStaff">Register as Airline Staff</a>
+<br/>
 <a href="/">Go back</a>
 </html>
