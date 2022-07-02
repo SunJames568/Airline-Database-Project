@@ -2,10 +2,48 @@
 <head>
 </head>
 <body>
+<style type="text/css">
+	table, th, td{
+		border: 1px solid black;
+	}
+</style>
+
+<table>
+	<th>Plane ID</th>
+	<th>Seat Capacity</th>
+	<th>Manufacturer</th>
+	<th>Age</th>
+
+{% for line in posts %}
+	<tr>
+		<td>{{line['airplane_id']}}</td>
+		<td>{{line['seating_capacity']}}</td>
+		<td>{{line['manufacturing_company']}}</td>
+		<td>{{line['age']}}</td>
+	</tr>
+{% endfor %}
+</table>
+
+<form action="/addFlight" method="POST">
+	<h2>Add a flight</h2>
+	<input type="text" name = "flight_num" placeholder="Flight Number" required/> </br>
+	<input type="text" name = "airplane_id" placeholder="Airplane ID" required/> </br>
+	<input type="text" name = "depart_airport" placeholder="Depart Airport" required/> </br>
+    <input type="datetime-local" name = "depart_date_time" placeholder="Depart Datetime" required/> </br>
+	<input type="text" name = "arrival_airport" placeholder="Arrival Airport" required/> </br>
+	<input type="datetime-local" name = "arrival_date_time" placeholder="Arrival Datetime" required/> </br>
+	<input type="text" name = "base_price" placeholder="Base Price" required/> </br>
+	<input type="text" name = "delay_status" placeholder="Status" required/> </br>
+	<input type="submit" value = Submit />
+</form>
+
+{% if flight_added %}
+<p class="port_added"><strong>Flight successfully added!</strong></p>
+{% endif %}
+
 <form action="/addPlane" method="POST">
 	<h2>Add an airplane</h2>
 	<input type="text" name = "airplane_id" placeholder="Airplane ID" required/> </br>
-    <input type="text" name = "airline_name" placeholder="Airline" required/> </br>
     <input type="text" name = "seat_capacity" placeholder="Seat Capacity" required/> </br>
 	<input type="text" name = "manufacturing_company" placeholder="Manufacturing Company" required/> </br>
 	<input type="text" name = "age" placeholder="Age" required/> </br>
@@ -21,8 +59,11 @@
 	<input type="submit" value = Submit />
 </form>
 
-{% if sub_pass %}
-<p class="regPass"><strong>Airport successfully added!</strong></p>
+{% if port_added %}
+<p class="port_added"><strong>Airport successfully added!</strong></p>
+{% endif %}
+{% if error %}
+<p class="error"><strong>Error:</strong> {{error}}</p>
 {% endif %}
 
 <a href="/logout">Logout</a>

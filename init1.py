@@ -264,8 +264,6 @@ def customerHome():
     query = 'SELECT flight_num, airline_name, airplane_ID, depart_date_time, depart_airport, arrival_date_time, arrival_airport, delay_status FROM ticket natural join future_flight WHERE email = %s'
     cursor.execute(query, (email))
     data1 = cursor.fetchall() 
-    for each in data1:
-        print(each['blog_post'])
     cursor.close()
     return render_template('customerHome.html', posts=data1, email=email)
 
@@ -343,6 +341,7 @@ def customerSearchStatus():
     date1 = request.form['retDate']
     date2 = request.form['arrDate']
     status = ""
+
     cursor = conn.cursor();
     query1 = 'SELECT delay_status\
             FROM future_flight\
@@ -374,7 +373,7 @@ def staffHomeFilter():
     arrAirport = request.form['arrAirport']
     date1 = request.form['date1']
     date2 = request.form['date2']
-    print(date1, "\n", date2)
+
     cursor = conn.cursor();
     query = 'SELECT * \
             FROM flight \
@@ -393,6 +392,127 @@ def staffHomeFilter():
     data1 = cursor.fetchall()
     cursor.close()
     return render_template('staffHome.html',  username = username, posts=data1, filtered = True)
+
+@app.route('/staffAdd')
+def staffAdd():
+    airline = session['airline']
+
+    cursor = conn.cursor();
+    query = 'SELECT airplane_id, seating_capacity, manufacturing_company, age \
+            FROM airplane WHERE airline_name = %s'
+    cursor.execute(query, (airline))
+    data1 = cursor.fetchall()
+
+    return render_template('staffAdd.html', posts=data1)
+
+@app.route('/addFlight', methods=['GET', 'POST'])
+def addFlight():
+    airline = session['airline']
+
+    flight_num = request.form['flight_num']
+    depart_airport = request.form['depart_airport']
+    airplane_id = request.form['airplane_id']
+    depart_date_time = request.form['depart_date_time']
+    arrival_airport = request.form['arrival_airport']
+    arrival_date_time = request.form['arrival_date_time']
+    base_price = request.form['base_price']
+    delay_status = request.form['delay_status']
+
+    cursor = conn.cursor();
+    query1 = 'SELECT * FROM flight WHERE flight_num = %s and depart_date_time = %s'
+    cursor.execute(query1, (flight_num, depart_date_time))
+    data1 = cursor.fetchone()
+    error = None
+    if(data1):
+        #If the previous query returns data, then flight exists
+        error = "This airport already exists"
+        return render_template('staffAdd.html', error=error)
+    else:
+        ins1 = 'INSERT into flight values(%s, %s, %s, %s, %s, %s, %s, %s, %s)'
+        cursor.execute(ins1, (flight_num, depart_date_time, airplane_id, airline, depart_airport, arrival_airport, arrival_date_time, base_price, delay_status))
+        
+        query2 = 'SELECT seating_capacity \
+                FROM airplane WHERE airplane_id = %s'
+        cursor.execute(query2, (airplane_id))
+        data2 = cursor.fetchone()
+        # Must insert tickets based on seating capacity of plane
+        for i in range(int(data2['seating_capacity'])):
+            ins2 = 'INSERT into ticket values(%s, NULL, %s, %s, NULL, NULL, NULL, NULL, NULL, NULL)'
+            cursor.execute(ins2, (i, flight_num, depart_date_time))
+
+        conn.commit()
+        cursor.close()
+        return render_template('staffAdd.html', flight_added=True)
+
+@app.route('/addPort', methods=['GET', 'POST'])
+def staffPort():
+    name = request.form['name']
+    city = request.form['city']
+    country = request.form['country']
+    port_type = request.form['type']
+
+    cursor = conn.cursor();
+    query = 'SELECT * FROM airport WHERE name = %s'
+    cursor.execute(query, (name))
+    data = cursor.fetchone()
+    error = None
+    if(data):
+        #If the previous query returns data, then airport exists
+        error = "This airport already exists"
+        return render_template('staffAdd.html', error=error)
+    else:
+        query1 = 'INSERT into aiport values(%s, %s, %s, %s)'
+        cursor.execute(query1, (name, city, country, port_type))
+        conn.commit() 
+        cursor.close()
+        return render_template('staffAdd.html', port_added=True)
+
+@app.route('/addPlane', methods=['GET', 'POST'])
+def staffPlane():
+    airline = session['airline']
+
+    airplane_id = request.form['airplane_id']
+    seat_capacity = request.form['seat_capacity']
+    manufacturing_company = request.form['manufacturing_company']
+    age = request.form['age']
+
+    cursor = conn.cursor();
+    query = 'SELECT * FROM airplane WHERE airplane_id = %s and airline_name = %s'
+    cursor.execute(query, (airplane_id, airline))
+    data = cursor.fetchone()
+    error = None
+    if(data):
+        #If the previous query returns data, then airport exists
+        error = "This airplane already exists"
+        return render_template('staffAdd.html', error=error)
+    else:
+        ins = 'INSERT into airplane values(%s, %s, %s, %s, %s)'
+        cursor.execute(ins, (airplane_id, airline, seat_capacity, manufacturing_company, age))
+        conn.commit() 
+        cursor.close()
+        return redirect('/staffPlaneList')
+
+@app.route('/staffPlaneList')
+def staffPlaneList():
+    airline = session['airline']
+
+    cursor = conn.cursor();
+    query = 'SELECT airplane_id, seating_capacity, manufacturing_company, age \
+        FROM airplane WHERE airline_name = %s'
+    cursor.execute(query, (airline))
+    data1 = cursor.fetchall()
+
+    return render_template('staffPlanes.html', posts=data1, airline=airline)
+
+@app.route('/staffAddFlight')
+def staffAddFlight():
+    airline = session['airline']
+
+    cursor = conn.cursor();
+    query = 'SELECT airplane_id, seating_capacity, manufacturing_company, age \
+                FROM airplane WHERE airline_name = %s'
+    cursor.execute(query, (airline))
+    data1 = cursor.fetchall()
 
 @app.route('/logout')
 def logout():

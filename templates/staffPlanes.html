@@ -1,0 +1,33 @@
+<html>
+<head>
+</head>
+<body>
+
+<h1>All aircraft owned by {{airline}}</h1>
+
+<style type="text/css">
+	table, th, td{
+		border: 1px solid black;
+	}
+</style>
+
+<table>
+	<th>Plane ID</th>
+	<th>Seat Capacity</th>
+	<th>Manufacturer</th>
+	<th>Age</th>
+
+{% for line in posts %}
+	<tr>
+		<td>{{line['airplane_id']}}</td>
+		<td>{{line['seating_capacity']}}</td>
+		<td>{{line['manufacturing_company']}}</td>
+		<td>{{line['age']}}</td>
+	</tr>
+{% endfor %}
+</table>
+<a href="/staffAdd">Go back</a>
+<a href="/logout">Logout</a>
+
+</body>
+</html>

@@ -162,6 +162,11 @@ WHERE flight_num = @f_num and depart_date_time = @depart_d_t;
 # future flights operated by the airline he/she works for the next 30 days.
 INSERT into flight values(@flight_num, @depart_date_time, @airplane_id, @airline_name, @depart_airport, @arrival_airport, @arrival_date_time, @base_price, @delay_status);
 
+    # Insert ticket values based on seat capacity
+for i in range(data2['seating_capacity']):
+            ins2 = 'INSERT into ticket values(%s, NULL, %s, %s, NULL, NULL, NULL, NULL, NULL, NULL)'
+            cursor.execute(ins2, (i, flight_num, depart_date_time))
+
 #3. Change Status of flights: He or she changes a flight status (FROM on-time to delayed or vice versa) via forms. 
 UPDATE flight
     SET delay_status = @status

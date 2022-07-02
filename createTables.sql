@@ -31,7 +31,7 @@ create table airplane
 airplane_id int,
 airline_name varchar(50),
 seating_capacity int,
-maufacturing_company varchar(50),
+manufacturing_company varchar(50),
 age int,
 primary key(airplane_id, airline_name),
 foreign key(airline_name) references airline(airline_name) on delete cascade
