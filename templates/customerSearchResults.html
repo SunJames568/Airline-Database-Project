@@ -2,7 +2,7 @@
 <head>
 </head>
 <body>
-<h3> Flights: </h3>
+<h3> Departing Flights: </h3>
 
 <style type="text/css">
 	table, th, td{
@@ -11,29 +11,73 @@
 </style>
 
 <table>
-	<th>flight_num</th>
-	<th>airline_name</th>
-	<th>plane_ID</th>
-	<th>depart_date_time</th>
-	<th>depart_airport</th>
-	<th>arrival_date_time</th>
-	<th>arrival_airport</th>
-	<th>delay_status</th>
+	<th>Flight Num</th>
+	<th>Airline Name</th>
+	<th>Plane ID</th>
+	<th>Depart Date-Time</th>
+	<th>Depart Airport</th>
+	<th>Arrival Date-Time</th>
+	<th>Arrival Airport</th>
+	<th>Base Price</th>
+	<th>Status</th>
+	<th>Purchase</th>
 
-{% for line in posts %}
+{% for line in post1 %}
 	<tr>
 		<td>{{line['flight_num']}}</td>
 		<td>{{line['airline_name']}}</td>
-		<td>{{line['plane_ID']}}</td>
-		<td>{{line['depart_dts']}}</td>
-		<td>{{line['depart_port']}}</td>
-		<td>{{line['arrival_dts']}}</td>
-		<td>{{line['arrival_port']}}</td>
-		<td>{{line['status']}}</td>
+		<td>{{line['airplane_id']}}</td>
+		<td>{{line['depart_date_time']}}</td>
+		<td>{{line['depart_airport']}}</td>
+		<td>{{line['arrival_date_time']}}</td>
+		<td>{{line['arrival_airport']}}</td>
+		<td>{{line['base_price']}}</td>
+		<td>{{line['delay_status']}}</td>
+		<td>
+			<form action="/customerPurchase" method="post"></form>
+				<input type="submit" name="{{line['flight_num']}}|{line['depart_date_time']}" value="View Customers">
+			</form>
+		</td>
 	</tr>
 {% endfor %}
 </table>
 
+{% if rt %}
+	<h3> Returning Flights: </h3>
+	<table>
+		<th>Flight Num</th>
+		<th>Airline Name</th>
+		<th>Plane ID</th>
+		<th>Depart Date-Time</th>
+		<th>Depart Airport</th>
+		<th>Arrival Date-Time</th>
+		<th>Arrival Airport</th>
+		<th>Base Price</th>
+		<th>Status</th>
+		<th>Purchase</th>
+
+	{% for line in post2 %}
+		<tr>
+			<td>{{line['flight_num']}}</td>
+			<td>{{line['airline_name']}}</td>
+			<td>{{line['airplane_id']}}</td>
+			<td>{{line['depart_date_time']}}</td>
+			<td>{{line['depart_airport']}}</td>
+			<td>{{line['arrival_date_time']}}</td>
+			<td>{{line['arrival_airport']}}</td>
+			<td>{{line['base_price']}}</td>
+			<td>{{line['delay_status']}}</td>
+			<td>
+				<form action="/customerPurchase" method="post"></form>
+					<input type="submit" name="{{line['flight_num']}}|{line['depart_date_time']}" value="View Customers">
+				</form>
+			</td>
+		</tr>
+	{% endfor %}
+	</table>
+{% endif %}
+
+<a href="/customerSearch">Go back</a>
 <a href="/logout">Logout</a>
 
 </body>

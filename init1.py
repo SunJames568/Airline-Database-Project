@@ -19,6 +19,92 @@ conn = pymysql.connect(host='localhost',
 def start():
     return render_template('index.html')
 
+@app.route('/publicSearch')
+def publicSearch():
+    return render_template('publicSearch.html')
+
+@app.route('/publicSearch/port', methods=['GET', 'POST'])
+def publicSearchPort():
+    depAirport = request.form['depAirport']
+    arrAirport = request.form['arrAirport']
+    date1 = request.form['date1']
+    date2 = request.form['date2']
+    data2 = []
+    rt = False
+    cursor = conn.cursor();
+    query1 = 'SELECT *\
+            FROM future_flight\
+            WHERE depart_airport = %s \
+                and arrival_airport = %s \
+                and CONVERT(depart_date_time, date) = %s'
+    cursor.execute(query1, (depAirport, arrAirport, date1))
+    data1 = cursor.fetchall()
+
+    if (date2 != ""):
+        rt = True
+        query2 = 'SELECT *\
+                FROM future_flight\
+                WHERE depart_airport = %s \
+                    and arrival_airport = %s \
+                    and (CONVERT(depart_date_time, date) = %s'
+        cursor.execute(query2, (arrAirport, depAirport, date2))
+        data2 = cursor.fetchall()
+    cursor.close()
+    return render_template('publicSearchResults.html', post1=data1, post2=data2, rt=rt)
+
+@app.route('/publicSearch/city', methods=['GET', 'POST'])
+def publicSearchCity():
+    depCity = request.form['depCity']
+    arrCity = request.form['arrCity']
+    date1 = request.form['dateC1']
+    date2 = request.form['dateC2']
+    data2 = []
+    rt = False
+    cursor = conn.cursor();
+    query1 = "SELECT flight_num, airline_name, airplane_id, depart_date_time, depart_airport, arrival_date_time, arrival_airport, base_price, delay_status\
+            FROM future_flight, airport as d, airport as a\
+            WHERE depart_airport = d.airport_name\
+                and d.city = %s\
+                and arrival_airport = a.airport_name\
+                and a.city = %s\
+                and CONVERT(depart_date_time, date) =  %s"
+    cursor.execute(query1, (depCity, arrCity, date1))
+    data1 = cursor.fetchall()
+
+    print(depCity, arrCity, date2)
+    if (date2 != ""):
+        rt = True
+        query2 = "SELECT flight_num, airline_name, airplane_id, depart_date_time, depart_airport, arrival_date_time, arrival_airport, base_price, delay_status\
+            FROM future_flight, airport as d, airport as a\
+            WHERE depart_airport = d.airport_name\
+                and d.city = %s\
+                and arrival_airport = a.airport_name\
+                and a.city = %s\
+                and CONVERT(depart_date_time, date) =  %s"
+        cursor.execute(query2, (arrCity, depCity, date2))
+        data2 = cursor.fetchall()
+    cursor.close()
+    return render_template('publicSearchResults.html', post1=data1, post2=data2, rt=rt)
+
+@app.route('/publicSearch/status', methods=['GET', 'POST'])
+def publicSearchStatus():
+    airlineName = request.form['airlineName']
+    flightNumber = request.form['flightNumber']
+    date1 = request.form['retDate']
+    date2 = request.form['arrDate']
+    status = ""
+    cursor = conn.cursor();
+    query1 = 'SELECT delay_status\
+            FROM future_flight\
+            WHERE airline_name = %s \
+                and flight_num = %s \
+                and CONVERT(depart_date_time, date) = %s \
+                and CONVERT(arrival_date_time, date) = %s'
+    cursor.execute(query1, (airlineName, flightNumber, date1, date2))
+    status = cursor.fetchone()['delay_status']
+    cursor.close()
+    return render_template('publicSearch.html', status=status)
+
 #Define route for login
 @app.route('/login')
 def login():
@@ -181,7 +267,93 @@ def customerHome():
     for each in data1:
         print(each['blog_post'])
     cursor.close()
-    return render_template('customerHome.html', posts=data1)
+    return render_template('customerHome.html', posts=data1, email=email)
+
+@app.route('/customerSearch')
+def customerSearch():
+    return render_template('customerSearch.html')
+
+@app.route('/customerSearch/port', methods=['GET', 'POST'])
+def pcustomerSearchPort():
+    depAirport = request.form['depAirport']
+    arrAirport = request.form['arrAirport']
+    date1 = request.form['date1']
+    date2 = request.form['date2']
+    data2 = []
+    rt = False
+    cursor = conn.cursor();
+    query1 = 'SELECT *\
+            FROM future_flight\
+            WHERE depart_airport = %s \
+                and arrival_airport = %s \
+                and CONVERT(depart_date_time, date) = %s'
+    cursor.execute(query1, (depAirport, arrAirport, date1))
+    data1 = cursor.fetchall()
+
+    if (date2 != ""):
+        rt = True
+        query2 = 'SELECT *\
+                FROM future_flight\
+                WHERE depart_airport = %s \
+                    and arrival_airport = %s \
+                    and (CONVERT(depart_date_time, date) = %s'
+        cursor.execute(query2, (arrAirport, depAirport, date2))
+        data2 = cursor.fetchall()
+    cursor.close()
+    return render_template('customerSearchResults.html', post1=data1, post2=data2, rt=rt)
+
+@app.route('/customerSearch/city', methods=['GET', 'POST'])
+def customerSearchCity():
+    depCity = request.form['depCity']
+    arrCity = request.form['arrCity']
+    date1 = request.form['dateC1']
+    date2 = request.form['dateC2']
+    data2 = []
+    rt = False
+    cursor = conn.cursor();
+    query1 = "SELECT flight_num, airline_name, airplane_id, depart_date_time, depart_airport, arrival_date_time, arrival_airport, base_price, delay_status\
+            FROM future_flight, airport as d, airport as a\
+            WHERE depart_airport = d.airport_name\
+                and d.city = %s\
+                and arrival_airport = a.airport_name\
+                and a.city = %s\
+                and CONVERT(depart_date_time, date) =  %s"
+    cursor.execute(query1, (depCity, arrCity, date1))
+    data1 = cursor.fetchall()
+
+    print(depCity, arrCity, date2)
+    if (date2 != ""):
+        rt = True
+        query2 = "SELECT flight_num, airline_name, airplane_id, depart_date_time, depart_airport, arrival_date_time, arrival_airport, base_price, delay_status\
+            FROM future_flight, airport as d, airport as a\
+            WHERE depart_airport = d.airport_name\
+                and d.city = %s\
+                and arrival_airport = a.airport_name\
+                and a.city = %s\
+                and CONVERT(depart_date_time, date) =  %s"
+        cursor.execute(query2, (arrCity, depCity, date2))
+        data2 = cursor.fetchall()
+    cursor.close()
+    return render_template('customerSearchResults.html', post1=data1, post2=data2, rt=rt)
+
+@app.route('/customerSearch/status', methods=['GET', 'POST'])
+def customerSearchStatus():
+    airlineName = request.form['airlineName']
+    flightNumber = request.form['flightNumber']
+    date1 = request.form['retDate']
+    date2 = request.form['arrDate']
+    status = ""
+    cursor = conn.cursor();
+    query1 = 'SELECT delay_status\
+            FROM future_flight\
+            WHERE airline_name = %s \
+                and flight_num = %s \
+                and CONVERT(depart_date_time, date) = %s \
+                and CONVERT(arrival_date_time, date) = %s'
+    cursor.execute(query1, (airlineName, flightNumber, date1, date2))
+    status = cursor.fetchone()['delay_status']
+    cursor.close()
+    return render_template('customerSearch.html', status=status)
 
 
 @app.route('/staffHome')
@@ -228,7 +400,7 @@ def logout():
     session.pop('airline')
     return redirect('/')
         
-app.secret_key = 'some key that you will never guess'
+app.secret_key = "please don't find this"
 #Run the app on localhost port 5000
 #debug = True -> you don't have to restart flask
 #for changes to go through, TURN OFF FOR PRODUCTION

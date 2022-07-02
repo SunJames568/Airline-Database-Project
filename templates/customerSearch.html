@@ -1,17 +1,14 @@
-<html>
-<head>
-</head>
 <body>
     <h3>Search by Airport:</h3>
     <div>
-        <form action="" method="POST">
+        <form action="customerSearch/port" method="POST">
             <label for="name"> Departure Airport*: </label> <input type="text" name="depAirport" placeholder="JFK" required/>
             <br/>
             <label for="name"> Arrival Airport*: </label> <input type="text" name="arrAirport" placeholder="PBI" required/>
             <br/>
-            <label for="name"> Departure Date*: </label> <input type="date" name="depDate" required/>
+            <label for="name"> Departure Date*: </label> <input type="date" name="date1" required/>
             <br/>
-            <label for="name"> Return Date: (Round Trips)</label> <input type="date" name="retDate"/>
+            <label for="name"> Return Date: (Round Trips)</label> <input type="date" name="date2"/>
             <br/>
             <input type="submit" name="searchAirport" value="Search">
         </form>
@@ -19,23 +16,21 @@
 
     <h3> Search by City: </h3>
     <div>
-        <form action="" method="POST">
+        <form action="customerSearch/city" method="POST">
             <label for="name"> Departure City*: </label>
             <input type="text" name="depCity" placeholder="Queens" required/>
             <br/>
             <label for="name"> Arrival City*: </label>
             <input type="text" name="arrCity" placeholder="Palm Beach" required/>
             <br/>
-            <label for="name"> Departure Date*: </label>
-            <input type="date" name="depDate" required/>
+            <label for="date1"> Departure Date*: </label>
+            <input type="date" name="dateC1" required/>
             <br/>
-            <label for="name"> Return Date: (Round Trips)</label>
-            <input type="date" name="retDate"/>
+            <label for="date2"> Return Date: (Round Trips)</label>
+            <input type="date" name="dateC2"/>
             <br/>
-            <input type="submit" name="searchCity" value="Search">
+            <input type="submit" value="Search">
         </form>
     </div>
+    <a href="/customerHome">Go back</a>
 </body>
-
-
-</html>

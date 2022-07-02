@@ -56,8 +56,8 @@ SELECT status
 FROM future_flight
 WHERE airline_name = @line_name 
     and flight_num = @f_num 
-    and depart_date_time = @depart_d_t 
-    and arrival_date_time = @arrival_d_t;
+    and CONVERT(depart_date_time, date) = @depart_d 
+    and CONVERT(arrival_date_time, date) = @arrival_d;
 
 # 2. Register system for customers + airline staff
 INSERT into customer values(@email, @name, @password, @b_num, @street, @city, @state, @phone, @pass_country, @pass_exp, @birth_d);
@@ -145,7 +145,7 @@ WHERE airline_name = @line_name
 
 #filter flights by airport
 SELECT *
-FROM flights natural
+FROM flights
 WHERE airline_name = @line_name 
     and (depart_airport = @depart_port or @depart_port is NULL) 
     and (arrival_airport = @arrival_port or @arrival_port is NULL)
