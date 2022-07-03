@@ -1,0 +1,42 @@
+<html>
+<head>
+</head>
+<body>
+
+<form action="/customerSpend/filter" method="POST">
+	<h2> Filter by dates: </h2>
+	<label for="date1"> Date Start*: </label> <input type="date" name="date1" required/>
+	<br/>
+	<label for="date2"> Date End*: </label> <input type="date" name="date2" required/>
+	<br/>
+	<input type="submit" value="Filter">
+</form>
+
+<h2> Total Spent: {{t_spend}}</h2>
+<br>
+
+<h2> Monthly Spending: </h2>
+
+<style type="text/css">
+	table, th, td{
+		border: 1px solid black;
+	}
+</style>
+
+<table>
+	<th>Month</th>
+	<th>Amount Spent</th>
+
+{% for line in posts %}
+	<tr>
+		<td>{{line['month']}}</td>
+		<td>{{line['m_spend']}}</td>
+	</tr>
+{% endfor %}
+</table>
+
+<a href="/customerHome">Go back</a>
+<a href="/logout">Logout</a>
+
+</body>
+</html>

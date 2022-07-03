@@ -1,18 +1,3 @@
-SELECT *
-FROM flight
-WHERE depart_date_time > CURDATE();
-
-SELECT *
-FROM flight
-WHERE delay_status = 'delayed';
-
-SELECT name
-FROM customer natural join tickets
-
-SELECT *
-FROM airplane
-WHERE airline_name = "Jet Blue";
-
 # view for future flights
 create view future_flight as
 SELECT *
@@ -33,7 +18,7 @@ SELECT *
 FROM future_flight
 WHERE depart_airport = @arrival_port 
     and arrival_airport = @depart_port 
-    and (CONVERT(depart_date_time, date) = @return_d_t or @return_d_t is NULL);
+    and (CONVERT(depart_date_time, date) = @return_d_t);
 
 #   by city
 SELECT *
@@ -50,7 +35,7 @@ WHERE depart_airport = d.airport_name
     and d.city = @arrival_city
     and arrival_airport = a.airport_name
     and a.city = @depart_city
-    and (CONVERT(depart_date_time, date) = @return_d_t or @return_d_t is NULL);
+    and (CONVERT(depart_date_time, date) = @return_d_t);
 #   b. see status based on airline name, flight num, arrival/depart date
 SELECT status
 FROM future_flight
@@ -67,67 +52,90 @@ INSERT into customer values(@email, @name, @password, @b_num, @street, @city, @s
 #Customer requirements
 # 1. View flights (future + specify date range, destination, and/or depart airport)
 SELECT flight_num, depart_date_time, airplane_ID, airline_name, depart_airport, arrival_airport, arrival_date_time, base_price, delay_status,
-FROM tickets natural join future_flight
+FROM ticket natural join future_flight
 WHERE email = @email;
+
+SELECT *
+FROM flights
+WHERE email = @email 
+    and (depart_airport = @depart_port or @depart_port = "") 
+    and (arrival_airport = @arrival_port or @arrival_port = "")
+    and (CONVERT(depart_date_time, date) between @date1 and @date2);
 
 # 2. Search for flights (depart airport, arrival port)
 SELECT *
 FROM future_flight
-WHERE depart_airport = @depart_port and arrival_airport = @arrival_port and CONVERT(depart_date_time, date) = @depart_d_t;
+WHERE depart_airport = @depart_port 
+    and arrival_airport = @arrival_port 
+    and CONVERT(depart_date_time, date) = @depart_d_t;
 
     # For return flights
 SELECT *
 FROM future_flight
 WHERE depart_airport = @arrival_port 
     and arrival_airport = @depart_port 
-    and (CONVERT(depart_date_time, date) = @return_d_t or @return_d_t is NULL);
+    and (CONVERT(depart_date_time, date) = @return_d_t);
 
 # 3. Purchase tickets (choose flight and purchase; build with flight search together)
-with overFilled(value) as (
-    SELECT count(flight_num)/seating_capacity
-    FROM tickets
-    WHERE flight_num = f_num 
-        and depart_date_time = depart_d_t 
-        and exists(email);
-)
-UPDATE tickets
-    set sold_price = case 
-        when  fill
-        email = c_email, card_type = c_type, card_name = c_name, expire_date = exp_date, purchase_date_time = purchase_d_t
-    WHERE ticket_ID = @t_id;
+    # Check for openings
+SELECT *
+FROM open_flight
+WHERE flight_num = @flight_num and depart_date_time = @depart_date_time
+
+    # Check if seating over %60
+SELECT count(email)/seating_capacity as ratio\
+FROM ticket natural join open_flight natural join airplane\
+WHERE flight_num = @f_num \
+    and depart_date_time = @depart_d_t
+
+    # Find vaccant ticket
+SELECT ticket_id\
+    FROM ticket\
+    WHERE flight_num = @f_num and depart_date_time = @depart_d_t
+
+UPDATE ticket\
+    SET sold_price = @price, email = @c_email, card_type = @c_type, card_name = @c_name, expire_date = @exp_date, purchase_date_time = @purchase_d_t and depart_date_time=depart_date_time \
+    WHERE ticket_id = @t_id;
 # 4. Cancel trip (more than 24 hrs FROM depart, ticket free to other customers)
-UPDATE tickets
+
+    # Check if flight is eligible for cancellation
+SELECT *
+FROM future_flight
+WHERE flight_num = @f_num 
+    and depart_date_time = @depart_d_t
+    and (TIMESTAMPDIFF(HOUR, NOW(), depart_date_time) > 24);
+
+UPDATE ticket
     set email, sold_price, card_type, card_number, card_name, expire_date, purchase_date_time = null
-    WHERE ticket_ID = @t_id 
-        and (TIMESTAMPDIFF(HOUR, NOW(), depart_date_time) > 24);
+    WHERE email = @email;
 
 # 5. rate + comment on flights (previous they took)
 INSERT into rate values(@email, @f_num, @depart_d_t, @rating_lvl, @comment);
 # 6. Track spending (total spent in past year and bar graph/table of monthly spending for past 6 months. Can specify date range)
     # total spent Past year (default view)
-SELECT sum(sold_price)
-FROM tickets
-WHERE email = c_email 
-    and CONVERT(depart_date_time, date) between DATE_ADD(CURDATE(), INTERVAL -1 YEAR) and CURDATE();
+SELECT sum(sold_price) as total
+FROM ticket
+WHERE email = @c_email 
+    and CONVERT(purchase_date_time, date) between DATE_ADD(CURDATE(), INTERVAL -1 YEAR) and CURDATE();
     # total spent (specify)
-SELECT sum(sold_price)
-FROM tickets
-WHERE email = c_email 
-    and CONVERT(depart_date_time, date) between @date1 and @date2;
+SELECT sum(sold_price) as total
+FROM ticket
+WHERE email = @c_email  
+    and CONVERT(purchase_date_time, date) between @date1 and @date2;
 
     # Monthly spending Past 6 months (default view)
-SELECT date_format(depart_date_time, '%M'), sum(sold_price)
-FROM tickets
+SELECT date_format(purchase_date_time, '%M') as month, sum(sold_price) as m_spend
+FROM ticket
 WHERE email = @c_email 
-    and CONVERT(depart_date_time, date) between (DATE_SUB(DATE_ADD(CURDATE(), INTERVAL -6 MONTH), INTERVAL DAYOFMONTH(DATE_ADD(CURDATE(), INTERVAL -6 MONTH))-1)) and CURDATE()
-GROUP BY date_format(depart_date_time, '%M');
+    and CONVERT(purchase_date_time, date) between (DATE_ADD(CURDATE(), INTERVAL -6 MONTH)) and CURDATE()
+GROUP BY date_format(purchase_date_time, '%M');
 
     # Monthly spending specified
-SELECT date_format(depart_date_time, '%M'), sum(sold_price)
-FROM tickets
+SELECT date_format(purchase_date_time, '%M') as month, sum(sold_price) as m_spend
+FROM ticket
 WHERE email = @c_email 
-    and CONVERT(depart_date_time, date) between @date1 and @date2
-group by date_format(depart_date_time, '%M');
+    and CONVERT(purchase_date_time, date) between @date1 and @date2
+group by date_format(purchase_date_time, '%M');
 
 # 7. Logout
 
@@ -147,13 +155,13 @@ WHERE airline_name = @line_name
 SELECT *
 FROM flights
 WHERE airline_name = @line_name 
-    and (depart_airport = @depart_port or @depart_port is NULL) 
-    and (arrival_airport = @arrival_port or @arrival_port is NULL)
+    and (depart_airport = @depart_port or @depart_port = "") 
+    and (arrival_airport = @arrival_port or @arrival_port = "")
     and (CONVERT(depart_date_time, date) between @date1 and @date2);
 
 #view customers FROM specific flight 
 SELECT email, name
-FROM tickets
+FROM ticket
 WHERE flight_num = @f_num and depart_date_time = @depart_d_t;
 
 
@@ -169,7 +177,7 @@ for i in range(data2['seating_capacity']):
 
 #3. Change Status of flights: He or she changes a flight status (FROM on-time to delayed or vice versa) via forms. 
 UPDATE flight
-    SET delay_status = @status
+    SET delay_status = @status, depart_date_time = depart_date_time
     WHERE flight_num = @flight_num and depart_date_time = @depart_d_t;
 
 #4. Add airplane in the system: He or she adds a new airplane, providing all the needed data, via forms. 
@@ -201,9 +209,9 @@ taken only on that particular airline.*/
 WITH flightCount(email, amount) as (
     SELECT email, count(ticket_ID)
     FROM ticket natural join flight
-    WHERE email = @email 
-        and airline_name = @airline_name 
+    WHERE airline_name = @airline_name 
         and CONVERT(depart_date_time, date) between DATE_ADD(CURDATE(), INTERVAL -1 YEAR) and CURDATE()
+    GROUP by email
 ),
     mostFlights(amount) as (
     SELECT max(amount)
@@ -224,11 +232,13 @@ WHERE airline_name = @airline_name
 SELECT count(ticket_ID)
 FROM ticket natural join flight
 WHERE airline_name = @airline_name
+    and email is not null\
     and CONVERT(depart_date_time, date) between DATE_ADD(CURDATE(), INTERVAL -1 YEAR) and CURDATE();
 #Last Month
 SELECT count(ticket_ID)
 FROM ticket natural join flight
 WHERE airline_name = @airline_name
+    and email is not null\
     and CONVERT(depart_date_time, date) between DATE_ADD(CURDATE(), INTERVAL -1 MONTH) and CURDATE();
 
 # Bar Charts
@@ -236,19 +246,22 @@ WHERE airline_name = @airline_name
 SELECT date_format(depart_date_time, '%M'), count(ticket_ID)
 FROM ticket natural join flight
 WHERE airline_name = @airline_name
-    and CONVERT(depart_date_time, date) between @date1 and @date2;
+    and email is not null\
+    and CONVERT(depart_date_time, date) between @date1 and @date2
 GROUP BY date_format(depart_date_time, '%M');
     # Last Year
-SELECT date_format(depart_date_time, '%M'), count(ticket_ID)
-FROM ticket natural join flight
-WHERE airline_name = @airline_name
-    and CONVERT(depart_date_time, date) between DATE_ADD(CURDATE(), INTERVAL -1 YEAR) and CURDATE();
-GROUP BY date_format(depart_date_time, '%M');
+SELECT date_format(purchase_date_time, '%%M') as month, count(ticket_ID) as m_sold\
+FROM ticket natural join flight\
+WHERE airline_name = %s\
+    and email is not null\
+    and CONVERT(purchase_date_time, date) between DATE_ADD(CURDATE(), INTERVAL -1 YEAR) and CURDATE()\
+GROUP BY date_format(purchase_date_time, '%%M');
     #Last Month
     SELECT date_format(depart_date_time, '%M'), count(ticket_ID)
 FROM ticket natural join flight
 WHERE airline_name = @airline_name
-    and CONVERT(depart_date_time, date) between DATE_ADD(CURDATE(), INTERVAL -1 MONTH) and CURDATE();
+    and email is not null\
+    and CONVERT(depart_date_time, date) between DATE_ADD(CURDATE(), INTERVAL -1 MONTH) and CURDATE()
 GROUP BY date_format(depart_date_time, '%M');
 
 /*9. View Earned Revenue: Show total amount of revenue earned FROM ticket sales in the last month and 

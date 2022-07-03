@@ -1,0 +1,36 @@
+<html>
+<head>
+</head>
+<body>
+<h1>Seating Roster for Flight {{flight_num}}:</h1>
+
+<style type="text/css">
+	table, th, td{
+		border: 1px solid black;
+	}
+</style>
+<table>
+	<th>Name</th>
+	<th>Customer Email</th>
+	<th>View History</th>
+
+{% for line in posts %}
+	<tr>
+		<td>{{line['name']}}</td>
+		<td>{{line['email']}}</td>
+		<td>
+			<form action="/staffHistory" method="post">
+				<input type="hidden" name="name" value="{{line['name']}}" />
+				<input type="hidden" name="email" value="{{line['email']}}" />
+				<input type="submit" name="view_hist" value="View History">
+			</form>
+		</td>
+	</tr>
+{% endfor %}
+</table>
+
+<a href="/staffHome">Go back</a>
+<a href="/logout">Logout</a>
+
+</body>
+</html>

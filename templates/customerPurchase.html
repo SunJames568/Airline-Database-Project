@@ -2,66 +2,47 @@
 <head>
 </head>
 <body>
+{% if error %}
+  <p class="error"><strong>Error:</strong> {{error}}</p>
+{% endif %}
+
+{% if not error %}
+<h3>Payment</h3>
+<p class="error"><strong>Ticket Price:</strong> ${{price}}</p>
+  
 <div class="row">
-    <div class="col-75">
-      <div class="container">
-        <form action="/action_page.php">
-          <style type="text/css">
-            table, th, td{
-              border: 1px solid black;
-            }
-          </style>
-          
-          <h3>Purchasing tickets for:</h3>
-          <table>
-            <th>flight_num</th>
-            <th>airline_name</th>
-            <th>plane_ID</th>
-            <th>depart_date_time</th>
-            <th>depart_airport</th>
-            <th>arrival_date_time</th>
-            <th>arrival_airport</th>
-            <th>delay_status</th>
-          
-          {% for line in posts %}
-            <tr>
-              <td>{{line['flight_num']}}</td>
-              <td>{{line['airline_name']}}</td>
-              <td>{{line['plane_ID']}}</td>
-              <td>{{line['depart_dts']}}</td>
-              <td>{{line['depart_port']}}</td>
-              <td>{{line['arrival_dts']}}</td>
-              <td>{{line['arrival_port']}}</td>
-              <td>{{line['status']}}</td>
-            </tr>
-          {% endfor %}
-          </table>
-          
-          <a href="/logout">Logout</a>
-          
-  
-          <div class="row">
-             
-            <div class="col-50">
-              <h3>Payment</h3>
-              </div>
-              <label for="cname">Name on Card</label>
-              <input type="text" id="cname" name="cardname" placeholder="John More Doe">
-              <label for="ccnum">Credit card number</label>
-              <input type="text" id="ccnum" name="cardnumber" placeholder="1111-2222-3333-4444">
-  
-              <div class="row">
-                <div class="col-50">
-                  <label for="expdate">Exp date</label>
-                  <input type="date" id="expdate" name="expdate" placeholder="2018">
-                </div>
-              </div>
-            </div>
-          </div>
-          <input type="submit" value="Continue to checkout" class="btn">
-        </form>
-      </div>
+<div class="col-50">
+
+</div>
+<form action="/customerPurchaseAuth" method="post">
+  <label for="cardtype">Card Type</label>
+  <select name="cardtype" id="cardtype" required>
+    <option value="">--Please choose an option--</option>
+    <option value="On Time">Credit</option>
+    <option value="Delayed">Debit</option>
+  </select>
+  <br>
+  <label for="ccnum">Card number</label>
+  <input type="text" id="ccnum" name="cardnumber" placeholder="1111-2222-3333-4444">
+  <div class="row">
+    <div class="col-50">
+      <label for="expdate">Exp date</label>
+      <input type="date" id="expdate" name="expdate" placeholder="2018">
+      <br>
+      <label for="cname">Name on Card</label>
+      <input type="text" id="cname" name="cardname" placeholder="John More Doe">
+      <input type="hidden" name="price" value="{{price}}" />
+      <input type="hidden" name="flight_num" value="{{line['flight_num']}}" />
+      <input type="hidden" name="depart_date_time" value="{{line['depart_date_time']}}" />
+      <br>
+      <input type="submit" value="Checkout" class="btn">
     </div>
-  </div> 
+  </div>
+  </form>
+</div> 
+  {% endif %}
+  
+<a href="/customerSearch">Go back</a>
+<a href="/logout">Logout</a>
 </body>
 </html>

@@ -21,6 +21,7 @@ def start():
 
 @app.route('/publicSearch')
 def publicSearch():
+
     return render_template('publicSearch.html')
 
 @app.route('/publicSearch/port', methods=['GET', 'POST'])
@@ -71,7 +72,6 @@ def publicSearchCity():
     cursor.execute(query1, (depCity, arrCity, date1))
     data1 = cursor.fetchall()
 
-    print(depCity, arrCity, date2)
     if (date2 != ""):
         rt = True
         query2 = "SELECT flight_num, airline_name, airplane_id, depart_date_time, depart_airport, arrival_date_time, arrival_airport, base_price, delay_status\
@@ -141,6 +141,7 @@ def loginAuthCustomer():
         #creates a session for the the user
         #session is a built in
         session['username'] = username
+        session['usertype'] = 'Customer'
         session['airline'] = ''
         return redirect(url_for('customerHome'))
     else:
@@ -168,6 +169,7 @@ def loginAuthStaff():
         #creates a session for the the user
         #session is a built in
         session['username'] = username
+        session['usertype'] = 'Staff'
         session['airline'] = data['airline_name']
         return redirect(url_for('staffHome'))
     else:
@@ -257,19 +259,47 @@ def registerAuthStaff():
         return render_template('registerStaff.html', regPass = True)
 
 @app.route('/customerHome')
-def customerHome():
+def customerHome(msg=None):
     
     email = session['username']
     cursor = conn.cursor();
-    query = 'SELECT flight_num, airline_name, airplane_ID, depart_date_time, depart_airport, arrival_date_time, arrival_airport, delay_status FROM ticket natural join future_flight WHERE email = %s'
+    query = 'SELECT flight_num, airline_name, airplane_id, depart_date_time, depart_airport, arrival_date_time, arrival_airport, delay_status FROM ticket natural join future_flight WHERE email = %s'
     cursor.execute(query, (email))
     data1 = cursor.fetchall() 
     cursor.close()
-    return render_template('customerHome.html', posts=data1, email=email)
+    return render_template('customerHome.html', posts=data1, email=email, msg=msg)
 
 @app.route('/customerSearch')
 def customerSearch():
     return render_template('customerSearch.html')
+
+@app.route('/customerHome/filter', methods=['GET', 'POST'])
+def customerHomeFilter():
+    username = session['username']
+    depAirport = request.form['depAirport']
+    arrAirport = request.form['arrAirport']
+    date1 = request.form['date1']
+    date2 = request.form['date2']
+
+    cursor = conn.cursor();
+    query = 'SELECT flight_num, airline_name, airplane_id, depart_date_time, depart_airport, arrival_date_time, arrival_airport, base_price, delay_status \
+            FROM flight natural join ticket \
+            WHERE email = %(name)s \
+                and (depart_airport = %(dep)s or %(dep)s = "") \
+                and (arrival_airport = %(arr)s or %(arr)s = "") \
+                and (CONVERT(depart_date_time, date) between %(d1)s and %(d2)s);'
+    paramFilter = {
+        "name" : username,
+        "dep" : depAirport,
+        "arr" : arrAirport,
+        "d1" : date1,
+        "d2" : date2
+    }
+    cursor.execute(query, paramFilter)
+    data1 = cursor.fetchall()
+    cursor.close()
+    return render_template('customerHome.html',  username=username, posts=data1, filtered=True)
+
 
 @app.route('/customerSearch/port', methods=['GET', 'POST'])
 def pcustomerSearchPort():
@@ -294,7 +324,7 @@ def pcustomerSearchPort():
                 FROM future_flight\
                 WHERE depart_airport = %s \
                     and arrival_airport = %s \
-                    and (CONVERT(depart_date_time, date) = %s'
+                    and CONVERT(depart_date_time, date) = %s'
         cursor.execute(query2, (arrAirport, depAirport, date2))
         data2 = cursor.fetchall()
     cursor.close()
@@ -319,7 +349,6 @@ def customerSearchCity():
     cursor.execute(query1, (depCity, arrCity, date1))
     data1 = cursor.fetchall()
 
-    print(depCity, arrCity, date2)
     if (date2 != ""):
         rt = True
         query2 = "SELECT flight_num, airline_name, airplane_id, depart_date_time, depart_airport, arrival_date_time, arrival_airport, base_price, delay_status\
@@ -354,6 +383,201 @@ def customerSearchStatus():
     cursor.close()
     return render_template('customerSearch.html', status=status)
 
+@app.route('/customerCancel', methods=['GET', 'POST'])
+def customerCancel():
+    flight_num = request.form['flight_num']
+    depart_date_time = request.form['depart_date_time']
+    username = session['username']
+    error = None
+    c_pass = False
+
+    # Check if flight is at least 24 hrs in the future
+    cursor = conn.cursor();
+    query1 = "SELECT * \
+            FROM future_flight \
+            WHERE flight_num = %s \
+                and depart_date_time = %s \
+                and (TIMESTAMPDIFF(HOUR, NOW(), depart_date_time) > 24)"
+    cursor.execute(query1, (flight_num, depart_date_time))
+    data1 = cursor.fetchone()
+
+    # Flight is ineligible for cancelling
+    if (not data1):
+        cursor.close()
+        error = "Flight is ineligible for cancellation."
+        return render_template('customerPurchase.html', error=error)
+    else:
+        c_pass = "Flight successfully cancelled!"
+        ins = "UPDATE ticket\
+                SET sold_price = NULL, email = NULL, card_type = NULL, card_number = NULL, card_name = NULL, expire_date = NULL, depart_date_time=depart_date_time, purchase_date_time = NULL \
+                WHERE flight_num = %s and email = %s"
+        cursor.execute(ins, (flight_num, username))
+        conn.commit()
+        cursor.close()
+        return (redirect(url_for("customerHome", msg=c_pass)))
+
+@app.route('/customerRate', methods=['GET', 'POST'])
+def customerRate():
+    flight_num = request.form['flight_num']
+    depart_date_time = request.form['depart_date_time']
+    username = session['username']
+    error = None
+    rate_pass = False
+
+    # Check if flight is in the past
+    cursor = conn.cursor();
+    query1 = "SELECT * \
+            FROM future_flight \
+            WHERE flight_num = %s \
+                and depart_date_time = %s \
+                and (TIMESTAMPDIFF(HOUR, NOW(), depart_date_time) < 0)"
+    cursor.execute(query1, (flight_num, depart_date_time))
+    data1 = cursor.fetchone()
+
+    # Check if rating was already made
+    query2 = "SELECT * \
+            FROM rate \
+            WHERE flight_num = %s \
+                and depart_date_time = %s \
+                and email = %s"
+    cursor.execute(query2, (flight_num, depart_date_time, username))
+    data2 = cursor.fetchone()
+
+    # Flight is ineligible for rating
+    if data1 or data2:
+        cursor.close()
+        error = "Flight is ineligible for rating."
+        return render_template('customerRate.html', error=error)
+    else:
+        cursor.close()
+        return render_template('customerRate.html', f_num=flight_num, depart_dt = depart_date_time)
+
+@app.route('/customerRateAuth', methods=['GET', 'POST'])
+def customerRateAuth():
+    flight_num = request.form['flight_num']
+    depart_date_time = request.form['depart_date_time']
+    rating = request.form['rating']
+    comment = request.form['comment']
+    username = session['username']
+    rate_pass = False
+
+    cursor = conn.cursor();
+    rate = "Rating submitted! Thank you!"
+    ins = "INSERT into rate values(%s, %s, %s, %s, %s)"
+    cursor.execute(ins, (username, flight_num, depart_date_time, rating, comment))
+    conn.commit()
+    cursor.close()
+    return (redirect(url_for("customerHome", msg=rate)))
+
+@app.route('/customerPurchase', methods=['GET', 'POST'])
+def customerPurchase():
+    flight_num = request.form['flight_num']
+    depart_date_time = request.form['depart_date_time']
+
+    #Check if flight is full
+    cursor = conn.cursor();
+    query1 = "SELECT *\
+                FROM open_flight\
+                WHERE flight_num = %s and depart_date_time = %s"
+    cursor.execute(query1, (flight_num, depart_date_time))
+    data1 = cursor.fetchall()
+
+    if(not data1):
+        cursor.close()
+        error = "This flight has no seats remaining."
+        return render_template('customerPurchase.html', error=error)
+    else:
+        # Determine if over %60 seat capacity
+        query2 = "SELECT count(email)/seating_capacity as ratio\
+                    FROM ticket natural join open_flight natural join airplane\
+                    WHERE flight_num = %s \
+                        and depart_date_time = %s"
+        cursor.execute(query2, (flight_num, depart_date_time))
+        cursor.close()
+    
+        data2 = float(cursor.fetchone()['ratio'])
+        price = float(data1[0]['base_price'])
+        if data2 >= 0.6:
+            price *= 1.2
+
+        return render_template('customerPurchase.html', line=data1[0], price=price)  
+
+@app.route('/customerPurchaseAuth', methods=['GET', 'POST'])
+def customerPurchaseAuth():
+    username = session['username']
+    cardtype = request.form['cardtype']
+    cardname = request.form['cardname']
+    cardnumber = request.form['cardnumber']
+    expdate = request.form['expdate']
+    flight_num = request.form['flight_num']
+    depart_date_time = request.form['depart_date_time']
+    price = request.form['price']
+
+    # Find a vaccant ticket and its ID
+    cursor = conn.cursor();
+    query = "SELECT ticket_id\
+            FROM ticket\
+            WHERE flight_num = %s and depart_date_time = %s"
+    cursor.execute(query, (flight_num, depart_date_time))
+    data1 = cursor.fetchone()
+
+    # Fill it with customer data
+    ins = "UPDATE ticket\
+            SET sold_price = %s, email = %s, card_type = %s, card_number = %s, card_name = %s, expire_date = %s, depart_date_time=depart_date_time \
+            WHERE ticket_id = %s"
+    cursor.execute(ins, (price, username, cardtype, cardnumber, cardname, expdate, data1['ticket_id']))
+    conn.commit()
+    cursor.close()
+    msg = "Successfully purchased ticket for flight ", flight_num
+    return (redirect(url_for("customerHome", msg=msg)))
+
+@app.route('/customerSpend')
+def customerSpend():
+    username = session['username']
+
+   # Find total spending in past year
+    cursor = conn.cursor();
+    query1 = "SELECT sum(sold_price) as total\
+            FROM ticket\
+            WHERE email = %s \
+                and CONVERT(purchase_date_time, date) between DATE_ADD(CURDATE(), INTERVAL -1 YEAR) and CURDATE();"
+    cursor.execute(query1, (username))
+    data1 = cursor.fetchone()
+
+    # Find monthly spending
+    query2 = "SELECT date_format(purchase_date_time, '%%M') as month, sum(sold_price) as m_spend \
+            FROM ticket WHERE email = %s \
+                and CONVERT(purchase_date_time, date) between DATE_ADD(CURDATE(), INTERVAL -6 MONTH) and CURDATE() \
+            GROUP by date_format(purchase_date_time, '%%M')"
+    cursor.execute(query2, (username))
+    data2 = cursor.fetchall()
+    cursor.close()
+    return render_template('customerSpend.html', t_spend=data1['total'], posts=data2)  
+
+@app.route('/customerSpend/filter', methods=['GET', 'POST'])
+def customerSpendFilter():
+    username = session['username']
+    date1 = request.form['date1']
+    date2 = request.form['date2']
+
+   # Find total spending in past year
+    cursor = conn.cursor();
+    query1 = "SELECT sum(sold_price) as total\
+            FROM ticket\
+            WHERE email = %s \
+                and CONVERT(purchase_date_time, date) between %s and %s;"
+    cursor.execute(query1, (username, date1, date2))
+    data1 = cursor.fetchone()
+
+    # Find monthly spending
+    query2 = "SELECT date_format(purchase_date_time, '%%M') as month, sum(sold_price) as m_spend \
+            FROM ticket WHERE email = %s \
+                and CONVERT(purchase_date_time, date) between %s and %s \
+            GROUP by date_format(purchase_date_time, '%%M')"
+    cursor.execute(query2, (username, date1, date2))
+    data2 = cursor.fetchall()
+    cursor.close()
+    return render_template('customerSpend.html', t_spend=data1['total'], posts=data2)  
 
 @app.route('/staffHome')
 def staffHome():
@@ -366,9 +590,86 @@ def staffHome():
     cursor.close()
     return render_template('staffHome.html', username = username, posts=data1, filtered = False)
 
+@app.route('/staffHome/rating', methods=['GET', 'POST'])
+def staffRate():
+    flight_num = request.form['flight_num']
+    depart_date_time = request.form['depart_date_time']
+
+    cursor = conn.cursor();
+    query1 = 'SELECT avg(rating_level) as avg\
+                    FROM rate\
+                    WHERE flight_num = %s and depart_date_time = %s'
+    cursor.execute(query1, (flight_num, depart_date_time))
+    data1 = cursor.fetchone()
+
+    query2 = 'SELECT email, rating_level, comment\
+            FROM rate\
+            WHERE flight_num = %s and depart_date_time = %s;'
+    cursor.execute(query2, (flight_num, depart_date_time))
+    data2 = cursor.fetchall()
+
+    cursor.close()
+    return render_template('staffRate.html', avg=data1, posts=data2, flight_num=flight_num)
+
+@app.route('/staffHome/seating', methods=['GET', 'POST'])
+def staffSeat():
+    flight_num = request.form['flight_num']
+    depart_date_time = request.form['depart_date_time']
+
+    cursor = conn.cursor();
+    query1 = 'SELECT name, email\
+                from customer natural join ticket\
+                where flight_num = %s\
+                    and depart_date_time = %s'
+    cursor.execute(query1, (flight_num, depart_date_time))
+    data1 = cursor.fetchall()
+
+    cursor.close()
+    return render_template('staffSeat.html', posts=data1, flight_num=flight_num)
+
+@app.route('/staffHistory', methods=['GET', 'POST'])
+def staffHistory():
+    name = request.form['name']
+    email = request.form['email']
+    airline = session['airline']
+
+    cursor = conn.cursor();
+    query1 = 'SELECT ticket_id, flight_num, depart_date_time, depart_airport, arrival_date_time, arrival_airport, purchase_date_time\
+                FROM ticket natural join flight\
+                WHERE email = %s\
+                    and airline_name = %s'
+    cursor.execute(query1, (email, airline))
+    data1 = cursor.fetchall()
+
+    cursor.close()
+    return render_template('staffHistory.html', posts=data1, name=name)
+
+@app.route('/staffHome/status', methods=['GET', 'POST'])
+def staffStatus():
+    username = session['username']
+    flight_num = request.form['flight_num']
+    depart_date_time = request.form['depart_date_time']
+    statusVal = request.form['statusVal']
+
+    cursor = conn.cursor();
+    ins = 'UPDATE flight \
+            SET delay_status = %s, depart_date_time = depart_date_time\
+            WHERE flight_num = %s and depart_date_time = %s'
+    cursor.execute(ins, (statusVal, flight_num, depart_date_time))
+    conn.commit()
+    displayQuery = 'SELECT * \
+                FROM flight WHERE flight_num = %s and depart_date_time = %s'
+    cursor.execute(displayQuery, (flight_num, depart_date_time))
+    data1 = cursor.fetchall()
+
+    cursor.close()
+    return render_template('staffHome.html', username = username, posts=data1, filtered=True, statChange=True)
+
+
 @app.route('/staffHome/filter', methods=['GET', 'POST'])
 def staffHomeFilter():
     username = session['username']
+    airline = session['airline']
     depAirport = request.form['depAirport']
     arrAirport = request.form['arrAirport']
     date1 = request.form['date1']
@@ -425,18 +726,26 @@ def addFlight():
     error = None
     if(data1):
         #If the previous query returns data, then flight exists
-        error = "This airport already exists"
+        error = "This flight already exists"
         return render_template('staffAdd.html', error=error)
     else:
         ins1 = 'INSERT into flight values(%s, %s, %s, %s, %s, %s, %s, %s, %s)'
+        print(airline, airplane_id)
         cursor.execute(ins1, (flight_num, depart_date_time, airplane_id, airline, depart_airport, arrival_airport, arrival_date_time, base_price, delay_status))
         
+        # Must insert tickets based on seating capacity of plane
         query2 = 'SELECT seating_capacity \
                 FROM airplane WHERE airplane_id = %s'
         cursor.execute(query2, (airplane_id))
-        data2 = cursor.fetchone()
-        # Must insert tickets based on seating capacity of plane
-        for i in range(int(data2['seating_capacity'])):
+        data2 = int(cursor.fetchone()['seating_capacity'])
+        query3 = 'SELECT ticket_id \
+                FROM ticket\
+                ORDER BY ticket_id DESC\
+                LIMIT 1'
+        cursor.execute(query3)
+        data3 = int(cursor.fetchone()['ticket_id'])
+        data3 += 1
+        for i in range(data3, data3+data2):
             ins2 = 'INSERT into ticket values(%s, NULL, %s, %s, NULL, NULL, NULL, NULL, NULL, NULL)'
             cursor.execute(ins2, (i, flight_num, depart_date_time))
 
@@ -514,10 +823,131 @@ def staffAddFlight():
     cursor.execute(query, (airline))
     data1 = cursor.fetchall()
 
+@app.route('/staffReport', methods=['GET', 'POST'])
+def staffReport():
+    airline = session['airline']
+
+   # Find total in past year
+    cursor = conn.cursor();
+    query1 = "SELECT count(ticket_ID) as total\
+                FROM ticket natural join flight\
+                WHERE airline_name = %s\
+                    and email is not null\
+                    and CONVERT(purchase_date_time, date) between DATE_ADD(CURDATE(), INTERVAL -1 YEAR) and CURDATE()"
+    cursor.execute(query1, (airline))
+    data1 = cursor.fetchone()
+
+    # Find monthly amount
+    query2 = "SELECT date_format(purchase_date_time, '%%M') as month, count(ticket_ID) as m_sold\
+                FROM ticket natural join flight\
+                WHERE airline_name = %s\
+                    and email is not null\
+                    and CONVERT(purchase_date_time, date) between DATE_ADD(CURDATE(), INTERVAL -1 YEAR) and CURDATE()\
+                GROUP BY date_format(purchase_date_time, '%%M');"
+    cursor.execute(query2, (airline))
+    data2 = cursor.fetchall()
+
+    # Find revenue from last year
+    query3 = "SELECT sum(sold_price) as rev\
+                FROM ticket natural join flight\
+                WHERE airline_name = %s\
+                    and email is not null\
+                    and CONVERT(purchase_date_time, date) between DATE_ADD(CURDATE(), INTERVAL -1 MONTH) and CURDATE();"
+    cursor.execute(query3, (airline))
+    data3 = cursor.fetchone()
+
+    # last month
+    query4 = "SELECT sum(sold_price) as rev\
+                FROM ticket natural join flight\
+                WHERE airline_name = %s\
+                    and email is not null\
+                    and CONVERT(purchase_date_time, date) between DATE_ADD(CURDATE(), INTERVAL -1 YEAR) and CURDATE();"
+    cursor.execute(query4, (airline))
+    data4 = cursor.fetchone()
+
+    # most frequent customer within the year
+    query5 = "WITH flightCount(email, amount) as (\
+                    SELECT email, count(ticket_ID)\
+                    FROM ticket natural join flight\
+                    WHERE airline_name = %s \
+                        and email is not NULL\
+                        and CONVERT(purchase_date_time, date) between DATE_ADD(CURDATE(), INTERVAL -1 YEAR) and CURDATE() \
+                    GROUP by email  ),\
+                mostFlights(flights) as (\
+                    SELECT max(amount)\
+                    FROM flightCount)\
+                SELECT name, flights\
+                FROM (customer natural join flightCount), mostFlights\
+                WHERE flightCount.amount = mostFlights.flights"
+    cursor.execute(query5, (airline))
+    data5 = cursor.fetchone()
+
+    cursor.close()
+    return render_template('staffReport.html', t_sold=data1['total'], posts=data2, y_rev=data3['rev'], m_rev=data4['rev'], y_cust = data5)  
+
+   
+
+
+@app.route('/staffReport/month', methods=['GET', 'POST'])
+def staffReportMonth():
+    airline = session['airline']
+
+   # Find total in past year
+    cursor = conn.cursor();
+    query1 = "SELECT count(ticket_ID) as total\
+                FROM ticket natural join flight\
+                WHERE airline_name = %s\
+                    and email is not null\
+                    and CONVERT(purchase_date_time, date) between DATE_ADD(CURDATE(), INTERVAL -1 MONTH) and CURDATE()"
+    cursor.execute(query1, (airline))
+    data1 = cursor.fetchone()
+
+    # Find monthly amount
+    query2 = "SELECT date_format(purchase_date_time, '%%M') as month, count(ticket_ID) as m_sold\
+                FROM ticket natural join flight\
+                WHERE airline_name = %s\
+                    and email is not null\
+                    and CONVERT(purchase_date_time, date) between DATE_ADD(CURDATE(), INTERVAL -1 MONTH) and CURDATE()\
+                GROUP BY date_format(purchase_date_time, '%%M');"
+    cursor.execute(query2, (airline))
+    data2 = cursor.fetchall()
+    cursor.close()
+    return render_template('staffReport.html', t_sold=data1['total'], posts=data2)  
+
+@app.route('/staffReport/filter', methods=['GET', 'POST'])
+def staffReportFilter():
+    airline = session['airline']
+    date1 = request.form['date1']
+    date2 = request.form['date2']
+
+   # Find total spending in past year
+    cursor = conn.cursor();
+    query1 = "SELECT count(ticket_ID) as total\
+                FROM ticket natural join flight\
+                WHERE airline_name = %s\
+                    and email is not null\
+                    and CONVERT(purchase_date_time, date) between %s and %s;"
+    cursor.execute(query1, (airline, date1, date2))
+    data1 = cursor.fetchone()
+
+    # Find monthly spending
+    query2 = "SELECT date_format(purchase_date_time, '%%M') as month, count(ticket_ID) as m_sold\
+                FROM ticket natural join flight\
+                WHERE airline_name = %s\
+                    and email is not null\
+                    and CONVERT(purchase_date_time, date) between %s and %s\
+                GROUP BY date_format(purchase_date_time, '%%M');"
+    cursor.execute(query2, (airline, date1, date2))
+    data2 = cursor.fetchall()
+    cursor.close()
+    return render_template('staffReport.html', t_sold=data1['total'], posts=data2)  
+
+
 @app.route('/logout')
 def logout():
     session.pop('username')
     session.pop('airline')
+    session['usertype'] = "Guest"
     return redirect('/')
         
 app.secret_key = "please don't find this"

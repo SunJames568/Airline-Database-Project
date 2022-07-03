@@ -5,10 +5,27 @@
 
 <h1>Welcome {{email}}</h1>
 
+{% if msg %}		
+<p><strong> class="statChange">{{msg}} </strong></p>
+{% endif %}
+
+<a href="/customerSearch">Search for additional flights to purchase</a>
+<br>
+<a href="/customerSpend">View spending stats</a>
+
+<form action="/customerHome/filter" method="POST">
+	<h3> Find Past/Current/Upcoming Flights: </h3>
+	<label for="depAirport"> Departure Airport: </label> <input type="text" name="depAirport" placeholder="JFK"/>
+	<br/>
+	<label for="arrAirport"> Arrival Airport: </label> <input type="text" name="arrAirport" placeholder="PBI"/>
+	<br/>
+	<label for="date1"> Date Start*: </label> <input type="date" name="date1" required/>
+	<br/>
+	<label for="date2"> Date End*: </label> <input type="date" name="date2" required/>
+	<br/>
+	<input type="submit" value="Filter">
+</form>
 <h3> Your Upcoming Flights: </h3>
-
-<a href="/customerSearch">Search for additional flights</a>
-
 <style type="text/css">
 	table, th, td{
 		border: 1px solid black;
@@ -24,21 +41,41 @@
 	<th>Arrival Date-Time</th>
 	<th>Arrival Airport</th>
 	<th>Status</th>
+	<th>Cancel</th>
+	{% if filtered %}
+	<th>Rate Flight</th>
+	{% endif %}	
+
 
 {% for line in posts %}
 	<tr>
 		<td>{{line['flight_num']}}</td>
 		<td>{{line['airline_name']}}</td>
-		<td>{{line['airplane_ID']}}</td>
+		<td>{{line['airplane_id']}}</td>
 		<td>{{line['depart_date_time']}}</td>
 		<td>{{line['depart_airport']}}</td>
 		<td>{{line['arrival_date_time']}}</td>
 		<td>{{line['arrival_airport']}}</td>
 		<td>{{line['delay_status']}}</td>
+		<td>
+			<form action="/customerCancel" method="post">
+				<input type="hidden" name="flight_num" value="{{line['flight_num']}}" />
+				<input type="hidden" name="depart_date_time" value="{{line['depart_date_time']}}" />
+				<input type="submit" name="cancel" value="Cancel Flight">
+			</form>
+		</td>
+		{% if filtered %}		
+		<td>
+			<form action="/customerRate" method="post">
+				<input type="hidden" name="flight_num" value="{{line['flight_num']}}" />
+				<input type="hidden" name="depart_date_time" value="{{line['depart_date_time']}}" />
+				<input type="submit" name="rate_flight" value="Rate Flight">
+			</form>
+		</td>
+		{% endif %}
 	</tr>
 {% endfor %}
 </table>
-<a href="/">Go back</a>
 <a href="/logout">Logout</a>
 
 </body>

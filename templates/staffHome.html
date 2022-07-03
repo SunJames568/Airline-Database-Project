@@ -4,7 +4,9 @@
 <body>
 <h1>Welcome {{username}}!</h1>
 
-<a href="/staffAdd">Add a new Flight/Airplane/Airport</a>
+<a href="/staffAdd">Add a new flight/airplane/airport</a>
+<br>
+<a href="/staffReport">View ticket selling reports/revenue</a>
 
 <form action="/staffHome/filter" method="POST">
 	<h3> Filter Flights: </h3>
@@ -38,6 +40,7 @@
 	<th>Delay Status</th>
 	<th>View Customers</th>
 	<th>View Ratings</th>
+	<th>Change Status</th>
 
 {% for line in posts %}
 	<tr>
@@ -51,20 +54,43 @@
 		<td>{{line['base_price']}}</td>
 		<td>{{line['delay_status']}}</td>
 		<td>
-			<form action="/staffSeating" method="post"></form>
-				<input type="submit" name="{{line['flight_num']}}|{line['depart_date_time']}" value="View Customers">
+			<form action="/staffHome/seating" method="post">
+				<input type="hidden" name="flight_num" value="{{line['flight_num']}}" />
+				<input type="hidden" name="depart_date_time" value="{{line['depart_date_time']}}" />
+				<input type="submit" name="view_customers" value="View Customers">
 			</form>
 		</td>
 		<td>
-			<form action="/staffRating" method="post"></form>
-				<input type="submit" name="{{line['flight_num']}}|{line['depart_date_time']}" value="Ratings">
+			<form action="/staffHome/rating" method="post">
+				<input type="hidden" name="flight_num" value="{{line['flight_num']}}" />
+				<input type="hidden" name="depart_date_time" value="{{line['depart_date_time']}}" />
+				<input type="submit" name="ratings" value="View Ratings">
 			</form>
+		</td>
+		<td>
+			<form action="/staffHome/status" method="post">
+				<input type="hidden" name="flight_num" value="{{line['flight_num']}}" />
+				<input type="hidden" name="depart_date_time" value="{{line['depart_date_time']}}" />
+			{% if not statChange %}		
+				<select name="statusVal" id="statusVal" required>
+					<option value="">--Please choose an option--</option>
+					<option value="On Time">On Time</option>
+					<option value="Delayed">Delayed</option>
+					<option value="Cancelled">Cancelled</option>
+				</select>
+				<input type="submit" name="changeStatus" value="Change Status">
+			</form>
+			{% endif %}
 		</td>
 	</tr>
 {% endfor %}
 </table>
+{% if statChange %}
+<p class="statChange"><strong>Status Changed!</strong></p>
+{% endif %}
+
 {% if filtered %}
-<a href="/staffHome">Go back</a>
+<a href="/staffHome">Return to default view</a>
 {% endif %}
 <a href="/logout">Logout</a>
 

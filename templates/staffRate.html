@@ -1,0 +1,32 @@
+<html>
+<head>
+</head>
+<body>
+<h1>Average rating for Flight {{flight_num}}: {{avg['avg']}}</h1>
+
+<h3> Ratings and Comments: </h3>
+
+<style type="text/css">
+	table, th, td{
+		border: 1px solid black;
+	}
+</style>
+<table>
+	<th>Customer Email</th>
+	<th>Rating</th>
+	<th>Comment</th>
+
+{% for line in posts %}
+	<tr>
+		<td>{{line['email']}}</td>
+		<td>{{line['rating_level']}}</td>
+		<td>{{line['comment']}}</td>
+	</tr>
+{% endfor %}
+</table>
+
+<a href="/staffHome">Go back</a>
+<a href="/logout">Logout</a>
+
+</body>
+</html>

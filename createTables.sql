@@ -40,7 +40,7 @@ foreign key(airline_name) references airline(airline_name) on delete cascade
 create table flight
 (
 flight_num int,
-depart_date_time timestamp,
+depart_date_time datetime,
 airplane_id int,
 airline_name varchar(50),
 depart_airport varchar(50),
@@ -117,6 +117,21 @@ create view future_flight as
 SELECT *
 FROM flight
 WHERE depart_date_time > CURDATE();
+
+# view for flights with vacancies
+create view open_flight as
+SELECT distinct
+        flight_num,
+        depart_date_time,
+        airplane_id,
+        airline_name,
+        depart_airport,
+        arrival_airport,
+        arrival_date_time,
+        base_price,
+        delay_status
+FROM future_flight natural join ticket
+WHERE email is null;
 
 /*
 create role staff;

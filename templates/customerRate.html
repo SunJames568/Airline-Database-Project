@@ -1,0 +1,22 @@
+<html>
+<head>
+</head>
+<body>
+<h2> Make a rating for flight {{f_num}}: </h2>
+{% if error %}
+<p class="error"><strong>Error:</strong> {{error}}</p>
+{% else %}
+<form action="/customerRateAuth" method="post">
+	<p><label for="rating">Rating (1-5) </label><input type="number" name="rating" min="1" max="5" required/></p>
+	<p><label for="comment">Comments (Max 300 characters) </label> <br>
+		<input type="text" id="comment" name="comment" style="height:150px; width:300px;"></p>
+		<input type="hidden" name="flight_num" value="{{f_num}}" />
+		<input type="hidden" name="depart_date_time" value="{{depart_dt}}" />
+	<p class="submit-wrap"><input type="submit" value="Submit" /></p>
+</form>
+{% endif %}
+<a href="/customerHome">Go back</a>
+<a href="/logout">Logout</a>
+
+</body>
+</html>

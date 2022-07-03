@@ -1,0 +1,54 @@
+<html>
+<head>
+</head>
+<body>
+
+<form action="/staffReport/filter" method="POST">
+	<h2> Filter by dates: </h2>
+	<label for="date1"> Date Start*: </label> <input type="date" name="date1" required/>
+	<br/>
+	<label for="date2"> Date End*: </label> <input type="date" name="date2" required/>
+	<br/>
+	<input type="submit" value="Filter">
+</form>
+
+<form action="/staffReport" method="POST">
+	<input type="submit" value="Past Year">
+</form>
+<form action="/staffReport/month" method="POST">
+	<input type="hidden" name="date1" value="DATE_ADD(CURDATE(), INTERVAL -1 MONTH)" />
+	<input type="hidden" name="date2" value="CURDATE()" />
+	<input type="submit" value="Past Month">
+</form>
+
+
+<h2> Total Tickets Sold: {{t_sold}}</h2>
+<h2> Last Year's Revenue: {{y_rev}}</h2>
+<h2> Last Month's Revenue: {{m_rev}}</h2>
+<h2> Most Frequent Customer: {{y_cust['name']}}, who has taken {{y_cust['flights']}} flight(s) in the past year.</h2>
+<br>
+
+<h2> Monthly Tickets Sold: </h2>
+
+<style type="text/css">
+	table, th, td{
+		border: 1px solid black;
+	}
+</style>
+
+<table>
+	<th>Month</th>
+	<th>Amount Spent</th>
+
+{% for line in posts %}
+	<tr>
+		<td>{{line['month']}}</td>
+		<td>{{line['m_sold']}}</td>
+	</tr>
+{% endfor %}
+</table>
+<a href="/staffHome">Go back</a>
+<a href="/logout">Logout</a>
+
+</body>
+</html>

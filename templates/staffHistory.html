@@ -1,0 +1,38 @@
+<html>
+<head>
+</head>
+<body>
+<h1>Flight History of {{name}}:</h1>
+
+<style type="text/css">
+	table, th, td{
+		border: 1px solid black;
+	}
+</style>
+<table>
+	<th>Ticket ID</th>
+	<th>Flight Number</th>
+	<th>Depart Datetime</th>
+	<th>Depart Airport</th>
+	<th>Arrival Datetime</th>
+	<th>Arrival Airport</th>
+	<th>Purchase Datetime</th>
+
+{% for line in posts %}
+	<tr>
+		<td>{{line['ticket_id']}}</td>
+		<td>{{line['flight_num']}}</td>
+		<td>{{line['depart_date_time']}}</td>
+		<td>{{line['depart_airport']}}</td>
+		<td>{{line['arrival_date_time']}}</td>
+		<td>{{line['arrival_airport']}}</td>
+		<td>{{line['purchase_date_time']}}</td>
+	</tr>
+{% endfor %}
+</table>
+
+<a href="/staffHome">Go back</a>
+<a href="/logout">Logout</a>
+
+</body>
+</html>

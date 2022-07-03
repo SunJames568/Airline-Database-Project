@@ -34,8 +34,10 @@
 		<td>{{line['base_price']}}</td>
 		<td>{{line['delay_status']}}</td>
 		<td>
-			<form action="/customerPurchase" method="post"></form>
-				<input type="submit" name="{{line['flight_num']}}|{line['depart_date_time']}" value="View Customers">
+			<form action="/customerPurchase" method="post">
+				<input type="hidden" name="flight_num" value="{{line['flight_num']}}" />
+				<input type="hidden" name="depart_date_time" value="{{line['depart_date_time']}}" />
+				<input type="submit" name="purchase" value="Purchase">
 			</form>
 		</td>
 	</tr>
@@ -68,8 +70,10 @@
 			<td>{{line['base_price']}}</td>
 			<td>{{line['delay_status']}}</td>
 			<td>
-				<form action="/customerPurchase" method="post"></form>
-					<input type="submit" name="{{line['flight_num']}}|{line['depart_date_time']}" value="View Customers">
+				<form action="/customerPurchase" method="post">
+					<input type="hidden" name="flight_num" value="{{line['flight_num']}}" />
+					<input type="hidden" name="depart_date_time" value="{{line['depart_date_time']}}" />
+					<input type="submit" name="purchase" value="Purchase">
 				</form>
 			</td>
 		</tr>
