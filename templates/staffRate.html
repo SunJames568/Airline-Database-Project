@@ -15,12 +15,20 @@
 	<th>Customer Email</th>
 	<th>Rating</th>
 	<th>Comment</th>
+	<th>View History</th>
 
 {% for line in posts %}
 	<tr>
 		<td>{{line['email']}}</td>
 		<td>{{line['rating_level']}}</td>
 		<td>{{line['comment']}}</td>
+		<td>
+			<form action="/staffHistory" method="post">
+				<input type="hidden" name="name" value="{{line['name']}}" />
+				<input type="hidden" name="email" value="{{line['email']}}" />
+				<input type="submit" name="view_hist" value="View History">
+			</form>
+		</td>
 	</tr>
 {% endfor %}
 </table>

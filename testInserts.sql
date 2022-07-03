@@ -1,4 +1,6 @@
 insert into airline values('JetBlue');
+insert into airline values('Delta');
+insert into airline values('United Airlines');
 
 insert into airport values('JFK', 'NYC', 'USA', null);
 insert into airport values('PVG', 'Shanghai', 'China', null);

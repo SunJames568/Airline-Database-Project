@@ -14,6 +14,17 @@ conn = pymysql.connect(host='localhost',
                        charset='utf8mb4',
                        cursorclass=pymysql.cursors.DictCursor)
 
+def require_customer_login():
+    if not "username" not in session:
+        return redirect(url_for("login"))
+    elif session["userType"] != "Customer":
+        return redirect(url_for("staffHome"))
+def require_staff_login():
+    if "username" not in session:
+        return redirect(url_for("login"))
+    elif session["userType"] != "Staff":
+        return redirect(url_for("customerHome"))
+
 #Define a route to hello function
 @app.route('/')
 def start():
@@ -259,6 +270,7 @@ def registerAuthStaff():
         return render_template('registerStaff.html', regPass = True)
 
 @app.route('/customerHome')
+@require_customer_login
 def customerHome(msg=None):
     
     email = session['username']
@@ -494,7 +506,6 @@ def customerPurchase():
                         and depart_date_time = %s"
         cursor.execute(query2, (flight_num, depart_date_time))
         cursor.close()
-    
         data2 = float(cursor.fetchone()['ratio'])
         price = float(data1[0]['base_price'])
         if data2 >= 0.6:
@@ -602,8 +613,8 @@ def staffRate():
     cursor.execute(query1, (flight_num, depart_date_time))
     data1 = cursor.fetchone()
 
-    query2 = 'SELECT email, rating_level, comment\
-            FROM rate\
+    query2 = 'SELECT name, email, rating_level, comment\
+            FROM customer natural join rate\
             WHERE flight_num = %s and depart_date_time = %s;'
     cursor.execute(query2, (flight_num, depart_date_time))
     data2 = cursor.fetchall()
@@ -730,7 +741,6 @@ def addFlight():
         return render_template('staffAdd.html', error=error)
     else:
         ins1 = 'INSERT into flight values(%s, %s, %s, %s, %s, %s, %s, %s, %s)'
-        print(airline, airplane_id)
         cursor.execute(ins1, (flight_num, depart_date_time, airplane_id, airline, depart_airport, arrival_airport, arrival_date_time, base_price, delay_status))
         
         # Must insert tickets based on seating capacity of plane
@@ -852,7 +862,7 @@ def staffReport():
                 FROM ticket natural join flight\
                 WHERE airline_name = %s\
                     and email is not null\
-                    and CONVERT(purchase_date_time, date) between DATE_ADD(CURDATE(), INTERVAL -1 MONTH) and CURDATE();"
+                    and CONVERT(purchase_date_time, date) between DATE_ADD(CURDATE(), INTERVAL -1 YEAR) and CURDATE();"
     cursor.execute(query3, (airline))
     data3 = cursor.fetchone()
 
@@ -861,7 +871,7 @@ def staffReport():
                 FROM ticket natural join flight\
                 WHERE airline_name = %s\
                     and email is not null\
-                    and CONVERT(purchase_date_time, date) between DATE_ADD(CURDATE(), INTERVAL -1 YEAR) and CURDATE();"
+                    and CONVERT(purchase_date_time, date) between DATE_ADD(CURDATE(), INTERVAL -1 MONTH) and CURDATE();"
     cursor.execute(query4, (airline))
     data4 = cursor.fetchone()
 
@@ -919,8 +929,7 @@ def staffReportFilter():
     airline = session['airline']
     date1 = request.form['date1']
     date2 = request.form['date2']
-
-   # Find total spending in past year
+    
     cursor = conn.cursor();
     query1 = "SELECT count(ticket_ID) as total\
                 FROM ticket natural join flight\
