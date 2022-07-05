@@ -21,13 +21,13 @@
 	<input type="submit" value="Past Month">
 </form>
 
-
+{% if y_cust %}
 <h2> Total Tickets Sold: {{t_sold}}</h2>
 <h2> Last Year's Revenue: {{y_rev}}</h2>
 <h2> Last Month's Revenue: {{m_rev}}</h2>
 <h2> Most Frequent Customer: {{y_cust['name']}}, who has taken {{y_cust['flights']}} flight(s) in the past year.</h2>
 <br>
-
+{% endif %}
 <h2> Monthly Tickets Sold: </h2>
 
 <style type="text/css">

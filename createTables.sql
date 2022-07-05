@@ -8,6 +8,7 @@ street varchar(50),
 city varchar(50),
 state varchar(50),
 phone_number varchar(12),
+passport_num int,
 passport_country varchar(50),
 passport_expiration date,
 birth_date date,
@@ -45,7 +46,7 @@ airplane_id int,
 airline_name varchar(50),
 depart_airport varchar(50),
 arrival_airport varchar(50),
-arrival_date_time timestamp,
+arrival_date_time datetime,
 base_price float(6),
 delay_status varchar(50),
 
@@ -57,10 +58,10 @@ foreign key(arrival_airport) references airport(airport_name) on delete set null
 
 create table ticket
 (
-ticket_id varchar(50),
+ticket_id int,
 email varchar(30),
 flight_num int,
-depart_date_time timestamp,
+depart_date_time datetime,
 sold_price float(6),
 card_type varchar(50),
 card_number numeric(16, 0),
@@ -76,7 +77,7 @@ create table rate
 (
 email varchar(30),
 flight_num int,
-depart_date_time timestamp,
+depart_date_time datetime,
 rating_level float(2),
 comment varchar(300),
 primary key(email, flight_num, depart_date_time),
@@ -134,14 +135,14 @@ FROM future_flight natural join ticket
 WHERE email is null;
 
 /*
-create role staff;
+CREATE ROLE staff;
 grant staff to airline_staff;
 grant select, update, insert on flight to staff;
 grant select on rates to staff;
 grant insert on airplane to staff;
 grant insert on airport to staff;
 
-create role custom;
+CREATE ROLE custom;
 grant custom to customer;
 grant select on flight to custom;
 grant update on tickets to custom;

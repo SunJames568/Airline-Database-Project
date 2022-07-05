@@ -200,6 +200,7 @@ def registerAuthCustomer():
     city = request.form['city']
     state = request.form['state']
     phone_number = request.form['phone_number']
+    passport_num = request.form['passport_num']
     passport_expiration = request.form['passport_expiration']
     passport_country = request.form['passport_country']
     birth_date = request.form['birth_date']
@@ -220,9 +221,9 @@ def registerAuthCustomer():
         error = "This customer already exists"
         return render_template('registerCustomer.html', error = error)
     else:
-        ins = 'insert into customer values(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);'
-        cursor.execute(ins, (email, name, password, building_number, street, city, state, phone_number, passport_expiration, passport_country, birth_date))
-        conn.commit()
+        ins = 'insert into customer values(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);'
+        cursor.execute(ins, (email, name, password, building_number, street, city, state, phone_number, passport_num, passport_expiration, passport_country, birth_date))
+        conn.commit() 
         cursor.close()
         return render_template('registerCustomer.html', regPass = True)
 
@@ -270,7 +271,6 @@ def registerAuthStaff():
         return render_template('registerStaff.html', regPass = True)
 
 @app.route('/customerHome')
-@require_customer_login
 def customerHome(msg=None):
     
     email = session['username']
@@ -754,6 +754,7 @@ def addFlight():
                 LIMIT 1'
         cursor.execute(query3)
         data3 = int(cursor.fetchone()['ticket_id'])
+        print(data3)
         data3 += 1
         for i in range(data3, data3+data2):
             ins2 = 'INSERT into ticket values(%s, NULL, %s, %s, NULL, NULL, NULL, NULL, NULL, NULL)'
@@ -771,7 +772,7 @@ def staffPort():
     port_type = request.form['type']
 
     cursor = conn.cursor();
-    query = 'SELECT * FROM airport WHERE name = %s'
+    query = 'SELECT * FROM airport WHERE airport_name = %s'
     cursor.execute(query, (name))
     data = cursor.fetchone()
     error = None
@@ -780,7 +781,7 @@ def staffPort():
         error = "This airport already exists"
         return render_template('staffAdd.html', error=error)
     else:
-        query1 = 'INSERT into aiport values(%s, %s, %s, %s)'
+        query1 = 'INSERT into airport values(%s, %s, %s, %s)'
         cursor.execute(query1, (name, city, country, port_type))
         conn.commit() 
         cursor.close()
